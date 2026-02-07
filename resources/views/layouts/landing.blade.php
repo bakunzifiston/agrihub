@@ -6,7 +6,7 @@
     <title>@yield('title', 'AgriHub')</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=dm-sans:400,500,600,700&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('layouts.partials.vite-assets')
     @stack('styles')
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased font-sans">
