@@ -1,0 +1,48 @@
+/* Fallback theme when Vite build is missing (cPanel). Mirrors tailwind.config.js */
+:root {
+    --color-primary: #1D293D;
+    --color-primary-50: #e8eaee;
+    --color-primary-100: #d1d5dd;
+    --color-primary-600: #1D293D;
+    --color-primary-700: #151d2e;
+    --color-primary-800: #0f1622;
+    --color-brand: #0F172B;
+    --color-brand-50: #e8e9ec;
+    --color-brand-100: #d1d3d9;
+    --color-brand-200: #a3a7b3;
+    --color-brand-600: #0F172B;
+    --color-brand-700: #0c1222;
+    --color-brand-800: #090e19;
+}
+/* Primary */
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-primary-50 { background-color: var(--color-primary-50) !important; }
+.bg-primary-100 { background-color: var(--color-primary-100) !important; }
+.bg-primary-700 { background-color: var(--color-primary-700) !important; }
+.text-primary { color: var(--color-primary) !important; }
+.text-primary-700 { color: var(--color-primary-700) !important; }
+.hover\:bg-primary-700:hover { background-color: var(--color-primary-700) !important; }
+.hover\:text-primary-700:hover { color: var(--color-primary-700) !important; }
+.border-primary { border-color: var(--color-primary) !important; }
+.border-l-white\/60 { border-left-color: rgba(255,255,255,0.6) !important; }
+.focus\:border-primary:focus { border-color: var(--color-primary) !important; }
+.focus\:ring-primary:focus { --tw-ring-color: var(--color-primary) !important; }
+.ring-primary { --tw-ring-color: var(--color-primary) !important; }
+/* Brand */
+.text-brand { color: var(--color-brand) !important; }
+.bg-brand { background-color: var(--color-brand) !important; }
+.hover\:text-brand:hover { color: var(--color-brand) !important; }
+.hover\:border-brand\/30:hover { border-color: rgba(15,23,43,0.3) !important; }
+.shadow-brand { box-shadow: 0 20px 25px -5px rgba(15,23,43,0.08), 0 8px 10px -6px rgba(15,23,43,0.05) !important; }
+/* Buttons and links styled like primary */
+button.bg-primary, a.bg-primary, .bg-primary-100.text-primary { background-color: var(--color-primary) !important; color: #fff !important; }
+button.bg-primary:hover, a.bg-primary:hover { background-color: var(--color-primary-700) !important; color: #fff !important; }
+/* Success / alert boxes */
+.bg-primary-100.text-primary { background-color: var(--color-primary-50) !important; color: var(--color-primary) !important; }
+/* Common overrides for Tailwind CDN */
+input:focus, select:focus, textarea:focus, button:focus { outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(29,41,61,0.2); }
+.rounded-md { border-radius: 0.375rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+.shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
