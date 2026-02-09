@@ -76,6 +76,45 @@
                 </select>
                 <x-input-error class="mt-2" :messages="$errors->get('land_unit')" />
             </div>
+            @php
+                $initialPlotCount = (int) old('plot_count', $profile?->plot_count ?? 0);
+                $initialPlotCount = max(0, $initialPlotCount);
+                $existingNames = array_values(old('plot_names', $profile?->plots->pluck('name')->values()->all() ?? []));
+                $initialPlotNames = [];
+                for ($i = 0; $i < $initialPlotCount; $i++) {
+                    $initialPlotNames[] = $existingNames[$i] ?? '';
+                }
+            @endphp
+            <div class="md:col-span-2" x-data="{
+                plotCount: {{ $initialPlotCount }},
+                plotNames: {{ json_encode($initialPlotNames) }},
+                syncPlotNamesToCount() {
+                    let n = Math.max(0, parseInt(this.plotCount) || 0);
+                    while (this.plotNames.length < n) this.plotNames.push('');
+                    while (this.plotNames.length > n) this.plotNames.pop();
+                    this.plotCount = n;
+                }
+            }" x-init="syncPlotNamesToCount()">
+                <div>
+                    <x-input-label for="plot_count" value="Number of plots" />
+                    <input type="number" id="plot_count" min="0" step="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+                        x-model.number="plotCount" @input="syncPlotNamesToCount()" placeholder="0" />
+                    <input type="hidden" name="plot_count" :value="plotCount" />
+                    <x-input-error class="mt-2" :messages="$errors->get('plot_count')" />
+                </div>
+                <div class="mt-4" x-show="plotCount > 0">
+                    <x-input-label value="Plot names" />
+                    <p class="text-sm text-gray-500 mt-0.5 mb-2">Enter a name for each plot (e.g. Plot 1, Plot 2, North field)</p>
+                    <template x-for="(name, index) in plotNames" :key="index">
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" name="plot_names[]" :value="name" @input="plotNames[index] = $event.target.value"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary text-sm"
+                                :placeholder="'Plot ' + (index + 1)" />
+                        </div>
+                    </template>
+                    <x-input-error class="mt-2" :messages="$errors->get('plot_names')" />
+                </div>
+            </div>
             <div>
                 <x-input-label for="registration_date" value="Registration Date" />
                 <x-text-input id="registration_date" name="registration_date" type="date" class="mt-1 block w-full" :value="old('registration_date', $profile?->registration_date?->format('Y-m-d'))" />
@@ -89,6 +128,27 @@
                 </select>
                 <x-input-error class="mt-2" :messages="$errors->get('status')" />
             </div>
+        </div>
+        <div class="mt-4">
+            <x-input-label value="Inputs availability" />
+            <div class="mt-2 flex flex-wrap gap-4">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="inputs_availability[]" value="seeds" class="rounded border-gray-300 text-primary focus:ring-primary"
+                        {{ in_array('seeds', old('inputs_availability', $profile?->inputs_availability ?? [])) ? 'checked' : '' }} />
+                    <span class="ml-2 text-sm text-gray-700">Seeds</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="inputs_availability[]" value="fertilizers" class="rounded border-gray-300 text-primary focus:ring-primary"
+                        {{ in_array('fertilizers', old('inputs_availability', $profile?->inputs_availability ?? [])) ? 'checked' : '' }} />
+                    <span class="ml-2 text-sm text-gray-700">Fertilizers</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="inputs_availability[]" value="feed" class="rounded border-gray-300 text-primary focus:ring-primary"
+                        {{ in_array('feed', old('inputs_availability', $profile?->inputs_availability ?? [])) ? 'checked' : '' }} />
+                    <span class="ml-2 text-sm text-gray-700">Feed</span>
+                </label>
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('inputs_availability')" />
         </div>
     </div>
 

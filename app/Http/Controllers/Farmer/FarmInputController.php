@@ -44,7 +44,7 @@ class FarmInputController extends Controller
 
     public function edit(FarmInput $farmInput): View|RedirectResponse
     {
-        if ($farmInput->farmer_id !== auth()->id()) {
+        if ((int) $farmInput->farmer_id !== (int) auth()->id()) {
             abort(403);
         }
 
@@ -53,7 +53,7 @@ class FarmInputController extends Controller
 
     public function update(Request $request, FarmInput $farmInput): RedirectResponse
     {
-        if ($farmInput->farmer_id !== auth()->id()) {
+        if ((int) $farmInput->farmer_id !== (int) auth()->id()) {
             abort(403);
         }
 
@@ -75,7 +75,7 @@ class FarmInputController extends Controller
 
     public function destroy(FarmInput $farmInput): RedirectResponse
     {
-        if ($farmInput->farmer_id !== auth()->id()) {
+        if ((int) $farmInput->farmer_id !== (int) auth()->id()) {
             abort(403);
         }
         $farmInput->delete();

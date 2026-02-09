@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Farmer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Crop;
+use App\Models\FarmProfilePlot;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CropController extends Controller
 {
     public function index(): View
     {
-        $crops = auth()->user()->crops()->latest()->get();
+        $crops = auth()->user()->crops()->with('plots')->latest()->get();
 
         return view('farmer.crops.index', compact('crops'));
     }
@@ -20,13 +22,22 @@ class CropController extends Controller
     public function create(): View
     {
         $registeredCrops = auth()->user()->registeredCrops()->orderBy('crop_name')->orderBy('crop_type')->get();
+        $plots = FarmProfilePlot::whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id'))
+            ->with('farmProfile')
+            ->orderBy('farm_profile_id')
+            ->orderBy('sort_order')
+            ->get();
 
-        return view('farmer.crops.create', compact('registeredCrops'));
+        return view('farmer.crops.create', compact('registeredCrops', 'plots'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'plot_ids' => ['nullable', 'array'],
+            'plot_ids.*' => [
+                Rule::exists('farm_profile_plots', 'id')->whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id')),
+            ],
             'crop_name' => ['required', 'string', 'max:255'],
             'crop_type' => ['nullable', 'string', 'max:100'],
             'season' => ['nullable', 'string', 'max:50'],
@@ -41,8 +52,10 @@ class CropController extends Controller
 
         $validated['farmer_id'] = auth()->id();
         $validated['crop_status'] = $validated['crop_status'] ?? 'planted';
+        $plotIds = $validated['plot_ids'] ?? [];
 
-        Crop::create($validated);
+        $crop = Crop::create(collect($validated)->except('plot_ids')->all());
+        $crop->plots()->sync($plotIds);
 
         return redirect()->route('farmer.crops.index')->with('success', 'Crop added successfully.');
     }
@@ -54,8 +67,13 @@ class CropController extends Controller
         }
 
         $registeredCrops = auth()->user()->registeredCrops()->orderBy('crop_name')->orderBy('crop_type')->get();
+        $plots = FarmProfilePlot::whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id'))
+            ->with('farmProfile')
+            ->orderBy('farm_profile_id')
+            ->orderBy('sort_order')
+            ->get();
 
-        return view('farmer.crops.edit', compact('crop', 'registeredCrops'));
+        return view('farmer.crops.edit', compact('crop', 'registeredCrops', 'plots'));
     }
 
     public function update(Request $request, Crop $crop): RedirectResponse
@@ -65,6 +83,10 @@ class CropController extends Controller
         }
 
         $validated = $request->validate([
+            'plot_ids' => ['nullable', 'array'],
+            'plot_ids.*' => [
+                Rule::exists('farm_profile_plots', 'id')->whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id')),
+            ],
             'crop_name' => ['required', 'string', 'max:255'],
             'crop_type' => ['nullable', 'string', 'max:100'],
             'season' => ['nullable', 'string', 'max:50'],
@@ -77,7 +99,8 @@ class CropController extends Controller
             'crop_status' => ['nullable', 'string', 'in:planted,growing,harvested'],
         ]);
 
-        $crop->update($validated);
+        $crop->update(collect($validated)->except('plot_ids')->all());
+        $crop->plots()->sync($validated['plot_ids'] ?? []);
 
         return redirect()->route('farmer.crops.index')->with('success', 'Crop updated successfully.');
     }

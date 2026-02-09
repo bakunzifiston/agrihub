@@ -12,7 +12,7 @@
                 <form method="POST" action="{{ route('farmer.crops.update', $crop) }}">
                     @csrf
                     @method('PATCH')
-                    @include('farmer.crops._form', ['crop' => $crop, 'registeredCrops' => $registeredCrops])
+                    @include('farmer.crops._form', ['crop' => $crop, 'registeredCrops' => $registeredCrops, 'plots' => $plots])
                     <div class="mt-6 flex gap-4">
                         <x-primary-button>Update Crop</x-primary-button>
                         <a href="{{ route('farmer.crops.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</a>

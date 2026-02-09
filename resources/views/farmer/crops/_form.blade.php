@@ -1,6 +1,22 @@
-@props(['crop' => null, 'registeredCrops' => collect()])
+@props(['crop' => null, 'registeredCrops' => collect(), 'plots' => collect()])
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    @if ($plots->isNotEmpty())
+        <div class="md:col-span-2">
+            <x-input-label value="Plots" />
+            <p class="text-xs text-gray-500 mt-0.5 mb-2">Select all plots where this crop is planted (optional)</p>
+            <div class="space-y-2 max-h-48 overflow-y-auto rounded-md border border-gray-200 p-3 bg-gray-50">
+                @foreach ($plots as $plot)
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="plot_ids[]" value="{{ $plot->id }}" class="rounded border-gray-300 text-primary focus:ring-primary"
+                            {{ in_array($plot->id, old('plot_ids', $crop?->plots->pluck('id')->all() ?? [])) ? 'checked' : '' }} />
+                        <span class="text-sm text-gray-800">{{ $plot->name }}{{ $plot->farmProfile ? ' — ' . $plot->farmProfile->farm_name : '' }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('plot_ids')" />
+        </div>
+    @endif
     @if ($registeredCrops->isNotEmpty())
         <div class="md:col-span-2">
             <x-input-label for="registered_crop_select" value="Quick select from registered crops" />

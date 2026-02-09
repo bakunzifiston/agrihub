@@ -34,6 +34,7 @@ class TenantSidebarService
             'label' => 'Inventory',
             'tables' => [
                 'farmer.inputs.index' => 'Inputs',
+                'farmer.input-applications.index' => 'Input Applications',
                 'farmer.outputs.index' => 'Outputs',
             ],
         ],

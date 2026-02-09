@@ -17,11 +17,13 @@ class FarmerDashboardController extends Controller
         $kpis = [];
         $charts = [];
 
+        $farmProfile = null;
         if ($this->featureService->isEnabled($user, 'farm_profile')) {
             $kpis['farm_profile'] = [
                 'label' => 'Farm Profiles',
                 'value' => $user->farmProfiles()->count(),
             ];
+            $farmProfile = $user->farmProfiles()->with('plots')->latest()->first();
         }
 
         if ($this->featureService->isEnabled($user, 'crop_livestock_tracking')) {
@@ -101,6 +103,6 @@ class FarmerDashboardController extends Controller
             ];
         }
 
-        return view('dashboards.farmer', compact('kpis', 'charts'));
+        return view('dashboards.farmer', compact('kpis', 'charts', 'farmProfile'));
     }
 }

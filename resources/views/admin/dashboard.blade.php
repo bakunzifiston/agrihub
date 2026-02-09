@@ -63,6 +63,34 @@
                                                 </form>
                                             </td>
                                         </tr>
+                                        <tr class="bg-gray-50">
+                                            <td colspan="5" class="px-4 py-3 text-xs text-gray-600">
+                                                @if ($tenant->tenant_type === 'farmer')
+                                                    <strong>Farm:</strong> {{ $tenant->farm_name ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Farm type:</strong> {{ $tenant->farm_type ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Location:</strong> {{ $tenant->location ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Country:</strong> {{ $tenant->country ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>District:</strong> {{ $tenant->district ?? '—' }}
+                                                @elseif ($tenant->tenant_type === 'cooperative')
+                                                    <strong>Cooperative:</strong> {{ $tenant->cooperative_name ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Focus:</strong> {{ $tenant->cooperative_focus ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Members:</strong> {{ $tenant->members_range ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Location:</strong> {{ $tenant->location ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Country:</strong> {{ $tenant->country ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>District:</strong> {{ $tenant->district ?? '—' }}
+                                                @elseif ($tenant->tenant_type === 'agribusiness')
+                                                    <strong>Business:</strong> {{ $tenant->business_name ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Type:</strong> {{ $tenant->business_type ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Location:</strong> {{ $tenant->location ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Country:</strong> {{ $tenant->country ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>District:</strong> {{ $tenant->district ?? '—' }}
+                                                @else
+                                                    <strong>Location:</strong> {{ $tenant->location ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>Country:</strong> {{ $tenant->country ?? '—' }} &nbsp;|&nbsp;
+                                                    <strong>District:</strong> {{ $tenant->district ?? '—' }}
+                                                @endif
+                                            </td>
+                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>

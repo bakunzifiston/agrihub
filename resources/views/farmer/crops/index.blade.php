@@ -24,6 +24,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Crop Name</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plot</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Season</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Planting</th>
@@ -35,6 +36,7 @@
                                 <tr>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $crop->crop_name }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->crop_type ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->plots->isNotEmpty() ? $crop->plots->pluck('name')->implode(', ') : '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->season ?? '-' }}</td>
                                     <td class="px-4 py-3">
                                         <span class="px-2 py-1 text-xs rounded-full bg-primary-100 text-primary">{{ ucfirst($crop->crop_status) }}</span>

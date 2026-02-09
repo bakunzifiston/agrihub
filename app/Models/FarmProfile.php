@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FarmProfile extends Model
 {
@@ -20,6 +21,7 @@ class FarmProfile extends Model
         'farm_type',
         'total_land_size',
         'land_unit',
+        'plot_count',
         'location_country',
         'location_district',
         'location_sector',
@@ -29,6 +31,7 @@ class FarmProfile extends Model
         'gps_longitude',
         'registration_date',
         'status',
+        'inputs_availability',
     ];
 
     protected function casts(): array
@@ -39,11 +42,17 @@ class FarmProfile extends Model
             'total_land_size' => 'decimal:2',
             'gps_latitude' => 'decimal:7',
             'gps_longitude' => 'decimal:7',
+            'inputs_availability' => 'array',
         ];
     }
 
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'farmer_id');
+    }
+
+    public function plots(): HasMany
+    {
+        return $this->hasMany(FarmProfilePlot::class)->orderBy('sort_order');
     }
 }

@@ -42,7 +42,7 @@ class FarmOutputController extends Controller
 
     public function edit(FarmOutput $farmOutput): View|RedirectResponse
     {
-        if ($farmOutput->farmer_id !== auth()->id()) {
+        if ((int) $farmOutput->farmer_id !== (int) auth()->id()) {
             abort(403);
         }
 
@@ -51,7 +51,7 @@ class FarmOutputController extends Controller
 
     public function update(Request $request, FarmOutput $farmOutput): RedirectResponse
     {
-        if ($farmOutput->farmer_id !== auth()->id()) {
+        if ((int) $farmOutput->farmer_id !== (int) auth()->id()) {
             abort(403);
         }
 
@@ -71,7 +71,7 @@ class FarmOutputController extends Controller
 
     public function destroy(FarmOutput $farmOutput): RedirectResponse
     {
-        if ($farmOutput->farmer_id !== auth()->id()) {
+        if ((int) $farmOutput->farmer_id !== (int) auth()->id()) {
             abort(403);
         }
         $farmOutput->delete();

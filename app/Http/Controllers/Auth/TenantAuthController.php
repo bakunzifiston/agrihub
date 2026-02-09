@@ -55,25 +55,60 @@ class TenantAuthController extends Controller
         $tenantType = $tenantType ?? $request->segment(1);
         $this->validateTenantType($tenantType);
 
-        $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+            'location' => ['nullable', 'string', 'max:255'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'district' => ['nullable', 'string', 'max:100'],
+        ];
 
-        $user = DB::transaction(function () use ($request, $tenantType) {
+        if ($tenantType === 'farmer') {
+            $rules['farm_name'] = ['required', 'string', 'max:255'];
+            $rules['farm_type'] = ['required', 'string', 'in:Crop,Livestock,Mixed'];
+        }
+        if ($tenantType === 'cooperative') {
+            $rules['cooperative_name'] = ['required', 'string', 'max:255'];
+            $rules['cooperative_focus'] = ['required', 'string', 'in:Crops,Livestock,Mixed'];
+            $rules['members_range'] = ['required', 'string', 'max:50'];
+        }
+        if ($tenantType === 'agribusiness') {
+            $rules['business_name'] = ['required', 'string', 'max:255'];
+            $rules['business_type'] = ['required', 'string', 'in:Buyer,Processor,Exporter,Retailer'];
+        }
+
+        $validated = $request->validate($rules);
+
+        $user = DB::transaction(function () use ($request, $tenantType, $validated) {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'tenant_type' => $tenantType,
                 'is_approved' => false,
+                'location' => $validated['location'] ?? null,
+                'country' => $validated['country'] ?? null,
+                'district' => $validated['district'] ?? null,
+                'farm_name' => $validated['farm_name'] ?? null,
+                'farm_type' => $validated['farm_type'] ?? null,
+                'cooperative_name' => $validated['cooperative_name'] ?? null,
+                'cooperative_focus' => $validated['cooperative_focus'] ?? null,
+                'members_range' => $validated['members_range'] ?? null,
+                'business_name' => $validated['business_name'] ?? null,
+                'business_type' => $validated['business_type'] ?? null,
             ]);
 
+            $orgName = match ($tenantType) {
+                'farmer' => $validated['farm_name'] ?? $request->name,
+                'cooperative' => $validated['cooperative_name'] ?? $request->name,
+                'agribusiness' => $validated['business_name'] ?? $request->name,
+                default => $request->name . "'s " . ucfirst($tenantType),
+            };
             $org = TenantOrganization::create([
                 'owner_id' => $user->id,
                 'tenant_type' => $tenantType,
-                'name' => $request->name . "'s " . ucfirst($tenantType),
+                'name' => $orgName,
             ]);
 
             $user->update(['organization_id' => $org->id]);

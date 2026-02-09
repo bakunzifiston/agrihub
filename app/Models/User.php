@@ -27,6 +27,16 @@ class User extends Authenticatable
         'tenant_type',
         'organization_id',
         'is_approved',
+        'location',
+        'country',
+        'district',
+        'farm_name',
+        'farm_type',
+        'cooperative_name',
+        'cooperative_focus',
+        'members_range',
+        'business_name',
+        'business_type',
     ];
 
     public const TENANT_FARMER = 'farmer';
@@ -117,6 +127,21 @@ class User extends Authenticatable
     public function farmSales(): HasMany
     {
         return $this->hasMany(FarmSale::class, 'farmer_id');
+    }
+
+    public function farmInputApplications(): HasMany
+    {
+        return $this->hasMany(FarmInputApplication::class, 'farmer_id');
+    }
+
+    public function registeredProducts(): HasMany
+    {
+        return $this->hasMany(FarmerRegisteredProduct::class, 'farmer_id');
+    }
+
+    public function farmerSuppliers(): HasMany
+    {
+        return $this->hasMany(FarmerSupplier::class, 'farmer_id');
     }
 
     // Cooperative relations (when user is cooperative)

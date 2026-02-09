@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\TenantAuthController;
 use App\Http\Controllers\CooperativeDashboardController;
 use App\Http\Controllers\FarmerDashboardController;
 use App\Http\Controllers\Farmer\CropController;
+use App\Http\Controllers\Farmer\FarmInputApplicationController;
 use App\Http\Controllers\Farmer\FarmInputController;
 use App\Http\Controllers\Farmer\FarmOutputController;
 use App\Http\Controllers\Farmer\FarmProfileController;
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'verified', 'tenant.approved', 'tenant.type:farmer'])
     Route::resource('livestock', LivestockController::class)->except(['show']);
     Route::resource('production-records', ProductionRecordController::class)->except(['show']);
     Route::resource('inputs', FarmInputController::class)->except(['show'])->parameters(['input' => 'farmInput']);
+    Route::resource('input-applications', FarmInputApplicationController::class)->except(['show'])->parameters(['input-application' => 'farmInputApplication']);
     Route::resource('outputs', FarmOutputController::class)->except(['show'])->parameters(['output' => 'farmOutput']);
     Route::resource('sales', FarmSaleController::class)->except(['show'])->parameters(['sale' => 'farmSale']);
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

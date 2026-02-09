@@ -31,6 +31,8 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Full Name</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farm Name</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farm Type</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plots</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inputs availability</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -42,6 +44,8 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $profile->full_name }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $profile->farm_name }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ ucfirst($profile->farm_type) }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{ $profile->plots->isNotEmpty() ? $profile->plots->pluck('name')->implode(', ') : ($profile->plot_count !== null ? $profile->plot_count . ' plot(s)' : '-') }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{ $profile->inputs_availability ? implode(', ', array_map('ucfirst', $profile->inputs_availability)) : '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $profile->location_district ?? $profile->location_country ?? '-' }}</td>
                                     <td class="px-4 py-3">
                                         <span class="px-2 py-1 text-xs rounded-full {{ $profile->status === 'active' ? 'bg-primary-100 text-primary' : 'bg-gray-100 text-gray-600' }}">
