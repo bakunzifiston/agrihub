@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Agribusiness;
 
 use App\Http\Controllers\Controller;
+use App\Models\AgribusinessInventory;
 use App\Models\Distribution;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,29 +13,62 @@ class DistributionController extends Controller
 {
     public function index(): View
     {
-        $distributions = auth()->user()->distributions()->latest()->get();
+        $distributions = auth()->user()->distributions()->with('inventory.warehouse', 'customer')->latest()->get();
 
         return view('agribusiness.distributions.index', compact('distributions'));
     }
 
     public function create(): View
     {
-        return view('agribusiness.distributions.create');
+        $inventoryItems = auth()->user()->agribusinessInventory()->with('warehouse')->orderBy('product_name')->get();
+        $customers = auth()->user()->agribusinessCustomers()->orderBy('name')->get();
+        return view('agribusiness.distributions.create', compact('inventoryItems', 'customers'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'inventory_id' => ['nullable', 'integer', 'exists:agribusiness_inventory,id'],
+            'customer_id' => ['nullable', 'integer', 'exists:agribusiness_customers,id'],
             'customer_name' => ['required', 'string', 'max:255'],
             'product_name' => ['required', 'string', 'max:255'],
             'quantity_dispatched' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
             'dispatch_date' => ['required', 'date'],
-            'delivery_status' => ['nullable', 'string', 'max:50'],
+            'delivery_status' => ['nullable', 'string', 'in:dispatched,in_transit,delivered,pending'],
         ]);
 
         $validated['agribusiness_id'] = auth()->id();
-        Distribution::create($validated);
+        $customerId = $validated['customer_id'] ?? null;
+        if ($customerId) {
+            $customer = \App\Models\AgribusinessCustomer::where('id', $customerId)->where('agribusiness_id', auth()->id())->first();
+            if ($customer) {
+                $validated['customer_name'] = $customer->name;
+                $validated['customer_id'] = $customer->id;
+            } else {
+                $validated['customer_id'] = null;
+            }
+        } else {
+            $validated['customer_id'] = null;
+        }
+        if (! empty($validated['inventory_id'])) {
+            $inv = AgribusinessInventory::where('id', $validated['inventory_id'])->where('agribusiness_id', auth()->id())->first();
+            if ($inv) {
+                $validated['product_name'] = $inv->product_name;
+                $validated['unit'] = $validated['unit'] ?: $inv->unit;
+            }
+        } else {
+            $validated['inventory_id'] = null;
+        }
+
+        $distribution = Distribution::create($validated);
+
+        if ($distribution->inventory_id) {
+            $inv = AgribusinessInventory::where('id', $distribution->inventory_id)->where('agribusiness_id', auth()->id())->first();
+            if ($inv) {
+                $inv->decrement('quantity_in_stock', $distribution->quantity_dispatched);
+            }
+        }
 
         return redirect()->route('agribusiness.distributions.index')->with('success', 'Distribution recorded.');
     }
@@ -44,8 +78,9 @@ class DistributionController extends Controller
         if ($distribution->agribusiness_id !== auth()->id()) {
             abort(403);
         }
-
-        return view('agribusiness.distributions.edit', compact('distribution'));
+        $inventoryItems = auth()->user()->agribusinessInventory()->with('warehouse')->orderBy('product_name')->get();
+        $customers = auth()->user()->agribusinessCustomers()->orderBy('name')->get();
+        return view('agribusiness.distributions.edit', compact('distribution', 'inventoryItems', 'customers'));
     }
 
     public function update(Request $request, Distribution $distribution): RedirectResponse
@@ -55,15 +90,56 @@ class DistributionController extends Controller
         }
 
         $validated = $request->validate([
+            'inventory_id' => ['nullable', 'integer', 'exists:agribusiness_inventory,id'],
+            'customer_id' => ['nullable', 'integer', 'exists:agribusiness_customers,id'],
             'customer_name' => ['required', 'string', 'max:255'],
             'product_name' => ['required', 'string', 'max:255'],
             'quantity_dispatched' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
             'dispatch_date' => ['required', 'date'],
-            'delivery_status' => ['nullable', 'string', 'max:50'],
+            'delivery_status' => ['nullable', 'string', 'in:dispatched,in_transit,delivered,pending'],
         ]);
 
+        $customerId = $validated['customer_id'] ?? null;
+        if ($customerId) {
+            $customer = \App\Models\AgribusinessCustomer::where('id', $customerId)->where('agribusiness_id', auth()->id())->first();
+            if ($customer) {
+                $validated['customer_name'] = $customer->name;
+                $validated['customer_id'] = $customer->id;
+            } else {
+                $validated['customer_id'] = null;
+            }
+        } else {
+            $validated['customer_id'] = null;
+        }
+
+        $oldInventoryId = $distribution->inventory_id;
+        $oldQuantity = (float) $distribution->quantity_dispatched;
+
+        if (! empty($validated['inventory_id'])) {
+            $inv = AgribusinessInventory::where('id', $validated['inventory_id'])->where('agribusiness_id', auth()->id())->first();
+            if ($inv) {
+                $validated['product_name'] = $inv->product_name;
+                $validated['unit'] = $validated['unit'] ?: $inv->unit;
+            }
+        } else {
+            $validated['inventory_id'] = null;
+        }
+
         $distribution->update($validated);
+
+        if ($oldInventoryId) {
+            $oldInv = AgribusinessInventory::where('id', $oldInventoryId)->where('agribusiness_id', auth()->id())->first();
+            if ($oldInv) {
+                $oldInv->increment('quantity_in_stock', $oldQuantity);
+            }
+        }
+        if ($distribution->inventory_id) {
+            $newInv = AgribusinessInventory::where('id', $distribution->inventory_id)->where('agribusiness_id', auth()->id())->first();
+            if ($newInv) {
+                $newInv->decrement('quantity_in_stock', $distribution->quantity_dispatched);
+            }
+        }
 
         return redirect()->route('agribusiness.distributions.index')->with('success', 'Distribution updated.');
     }
@@ -72,6 +148,12 @@ class DistributionController extends Controller
     {
         if ($distribution->agribusiness_id !== auth()->id()) {
             abort(403);
+        }
+        if ($distribution->inventory_id) {
+            $inv = AgribusinessInventory::where('id', $distribution->inventory_id)->where('agribusiness_id', auth()->id())->first();
+            if ($inv) {
+                $inv->increment('quantity_in_stock', $distribution->quantity_dispatched);
+            }
         }
         $distribution->delete();
 

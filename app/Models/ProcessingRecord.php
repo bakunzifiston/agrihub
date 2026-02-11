@@ -4,14 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProcessingRecord extends Model
 {
     protected $fillable = [
         'agribusiness_id',
-        'raw_material',
-        'quantity_input',
-        'input_unit',
+        'contract_id',
         'quantity_output',
         'output_unit',
         'processing_date',
@@ -23,7 +22,6 @@ class ProcessingRecord extends Model
     {
         return [
             'processing_date' => 'date',
-            'quantity_input' => 'decimal:2',
             'quantity_output' => 'decimal:2',
             'processing_cost' => 'decimal:2',
             'wastage_quantity' => 'decimal:2',
@@ -33,5 +31,15 @@ class ProcessingRecord extends Model
     public function agribusiness(): BelongsTo
     {
         return $this->belongsTo(User::class, 'agribusiness_id');
+    }
+
+    public function contract(): BelongsTo
+    {
+        return $this->belongsTo(Contract::class);
+    }
+
+    public function rawMaterials(): HasMany
+    {
+        return $this->hasMany(ProcessingRawMaterial::class);
     }
 }

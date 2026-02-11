@@ -23,9 +23,13 @@ class FeatureService
         ],
         'cooperative' => [
             'dashboard' => true,
+            'cooperative_profile' => true,
             'member_management' => true,
             'collection_aggregation' => true,
+            'crop_livestock' => true,
             'cooperative_inventory' => true,
+            'orders' => true,
+            'warehouses' => true,
             'payments_to_farmers' => true,
             'performance_analytics' => true,
         ],
@@ -51,9 +55,13 @@ class FeatureService
 
     public const COOPERATIVE_FEATURES = [
         'dashboard' => 'Dashboard Overview',
+        'cooperative_profile' => 'Cooperative Profile',
         'member_management' => 'Member (Farmer) Management',
         'collection_aggregation' => 'Collection & Aggregation Tracking',
+        'crop_livestock' => 'Crop & Livestock',
         'cooperative_inventory' => 'Cooperative Inventory',
+        'orders' => 'Orders (Clients & Orders)',
+        'warehouses' => 'Warehouses',
         'payments_to_farmers' => 'Payments to Farmers',
         'performance_analytics' => 'Performance Analytics',
     ];

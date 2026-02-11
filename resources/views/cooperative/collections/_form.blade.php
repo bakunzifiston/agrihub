@@ -2,14 +2,20 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
-        <x-input-label for="farmer_id" value="Farmer *" />
-        <select id="farmer_id" name="farmer_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
-            <option value="">Select farmer</option>
-            @foreach ($farmers as $f)
-                <option value="{{ $f->id }}" @selected(old('farmer_id', $collection?->farmer_id) == $f->id)>{{ $f->name }} ({{ $f->email }})</option>
+        <x-input-label for="member_id" value="Member (farmer)" />
+        <select id="member_id" name="member_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+            <option value="">— Or enter name below —</option>
+            @foreach ($members as $m)
+                <option value="{{ $m->id }}" @selected(old('member_id', $collection?->member_id) == $m->id)>{{ $m->display_name }}{{ $m->membership_number ? ' (' . $m->membership_number . ')' : '' }}</option>
             @endforeach
         </select>
-        <x-input-error class="mt-2" :messages="$errors->get('farmer_id')" />
+        <x-input-error class="mt-2" :messages="$errors->get('member_id')" />
+    </div>
+    <div>
+        <x-input-label for="contributor_name" value="Or enter farmer name manually" />
+        <x-text-input id="contributor_name" name="contributor_name" type="text" class="mt-1 block w-full" :value="old('contributor_name', $collection ? $collection->getRawOriginal('contributor_name') : '')" placeholder="Type name if not selecting a member" />
+        <p class="text-xs text-gray-500 mt-1">Select a member above or enter the farmer name here.</p>
+        <x-input-error class="mt-2" :messages="$errors->get('contributor_name')" />
     </div>
     <div>
         <x-input-label for="product_name" value="Product Name *" />

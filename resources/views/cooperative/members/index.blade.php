@@ -20,7 +20,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Membership #</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Join Date</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contribution</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
@@ -32,7 +32,7 @@
                         @foreach ($members as $m)
                             <tr>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $m->membership_number ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $m->farmer?->name ?? 'N/A' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $m->display_name }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $m->join_date?->format('M d, Y') ?? '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ number_format($m->contribution_amount, 2) }}</td>
                                 <td class="px-4 py-3">

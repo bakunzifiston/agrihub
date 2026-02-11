@@ -20,7 +20,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farmer</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
@@ -35,7 +35,7 @@
                         @foreach ($collections as $c)
                             <tr>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $c->product_name }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $c->farmer?->name ?? 'N/A' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $c->contributor_name }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $c->collection_date->format('M d, Y') }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ number_format($c->quantity_collected, 2) }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $c->unit }}</td>

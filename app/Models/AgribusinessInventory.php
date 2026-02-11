@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AgribusinessInventory extends Model
 {
@@ -37,5 +38,10 @@ class AgribusinessInventory extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(AgribusinessWarehouse::class, 'warehouse_id');
+    }
+
+    public function distributions(): HasMany
+    {
+        return $this->hasMany(Distribution::class, 'inventory_id');
     }
 }

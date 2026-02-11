@@ -12,14 +12,16 @@ class WarehouseController extends Controller
 {
     public function index(): View
     {
-        $warehouses = auth()->user()->cooperativeWarehouses()->withCount('inventory')->latest()->get();
+        $warehouses = auth()->user()->cooperativeWarehouses()->withCount('inventory')->with('managerMember')->latest()->get();
 
         return view('cooperative.warehouses.index', compact('warehouses'));
     }
 
     public function create(): View
     {
-        return view('cooperative.warehouses.create');
+        $members = auth()->user()->cooperativeMembers()->get()->sortBy('display_name');
+
+        return view('cooperative.warehouses.create', compact('members'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -28,9 +30,27 @@ class WarehouseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'district' => ['nullable', 'string', 'max:100'],
+            'sector' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'gps_latitude' => ['nullable', 'numeric'],
+            'gps_longitude' => ['nullable', 'numeric'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'manager_member_id' => ['nullable', 'exists:cooperative_members,id'],
+            'manager_name' => ['nullable', 'string', 'max:255'],
         ]);
-
+        if (! empty($validated['manager_member_id'])) {
+            $member = \App\Models\CooperativeMember::find($validated['manager_member_id']);
+            if ($member && (int) $member->cooperative_id !== (int) auth()->id()) {
+                return back()->withErrors(['manager_member_id' => 'Invalid member.']);
+            }
+        }
         $validated['cooperative_id'] = auth()->id();
+        $validated['manager_member_id'] = $validated['manager_member_id'] ?: null;
+        $validated['manager_name'] = trim($validated['manager_name'] ?? '') ?: null;
+
         CooperativeWarehouse::create($validated);
 
         return redirect()->route('cooperative.warehouses.index')->with('success', 'Warehouse added.');
@@ -41,8 +61,9 @@ class WarehouseController extends Controller
         if ($warehouse->cooperative_id !== auth()->id()) {
             abort(403);
         }
+        $members = auth()->user()->cooperativeMembers()->get()->sortBy('display_name');
 
-        return view('cooperative.warehouses.edit', compact('warehouse'));
+        return view('cooperative.warehouses.edit', compact('warehouse', 'members'));
     }
 
     public function update(Request $request, CooperativeWarehouse $warehouse): RedirectResponse
@@ -55,7 +76,25 @@ class WarehouseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'district' => ['nullable', 'string', 'max:100'],
+            'sector' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'gps_latitude' => ['nullable', 'numeric'],
+            'gps_longitude' => ['nullable', 'numeric'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'manager_member_id' => ['nullable', 'exists:cooperative_members,id'],
+            'manager_name' => ['nullable', 'string', 'max:255'],
         ]);
+        if (! empty($validated['manager_member_id'])) {
+            $member = \App\Models\CooperativeMember::find($validated['manager_member_id']);
+            if ($member && (int) $member->cooperative_id !== (int) auth()->id()) {
+                return back()->withErrors(['manager_member_id' => 'Invalid member.']);
+            }
+        }
+        $validated['manager_member_id'] = $validated['manager_member_id'] ?: null;
+        $validated['manager_name'] = trim($validated['manager_name'] ?? '') ?: null;
 
         $warehouse->update($validated);
 

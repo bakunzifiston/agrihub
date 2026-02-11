@@ -19,19 +19,23 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warehouse ID</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inventory Items</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">City / District / Sector</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Country</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Manager</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inventory</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($warehouses as $wh)
                             <tr>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $wh->warehouse_id }}</td>
                                 <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $wh->name }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $wh->location ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ Str::limit($wh->description, 40) ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ implode(' / ', array_filter([$wh->city, $wh->district, $wh->sector])) ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $wh->country ?? '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $wh->manager_display_name }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $wh->inventory_count }}</td>
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('cooperative.warehouses.edit', $wh) }}" class="text-primary hover:text-primary-700 text-sm font-medium mr-3">Edit</a>

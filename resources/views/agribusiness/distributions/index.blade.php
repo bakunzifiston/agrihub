@@ -21,6 +21,7 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">From warehouse</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dispatch Date</th>
@@ -31,8 +32,9 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($distributions as $d)
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $d->customer_name }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $d->customer_display_name }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $d->product_name }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $d->inventory && $d->inventory->warehouse ? $d->inventory->warehouse->name : '—' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ number_format($d->quantity_dispatched, 2) }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $d->unit }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $d->dispatch_date->format('M d, Y') }}</td>

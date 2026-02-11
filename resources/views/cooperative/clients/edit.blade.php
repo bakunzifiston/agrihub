@@ -1,0 +1,20 @@
+<x-tenant-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Client</h2>
+            <a href="{{ route('cooperative.clients.index') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium">← Back to Clients</a>
+        </div>
+    </x-slot>
+
+    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+        <form method="POST" action="{{ route('cooperative.clients.update', $client) }}">
+            @csrf
+            @method('PATCH')
+            @include('cooperative.clients._form', ['client' => $client])
+            <div class="mt-6 flex gap-3">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-700 font-medium text-sm">Update Client</button>
+                <a href="{{ route('cooperative.clients.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 text-sm font-medium">Cancel</a>
+            </div>
+        </form>
+    </div>
+</x-tenant-layout>

@@ -10,12 +10,28 @@ class CooperativeMember extends Model
     protected $fillable = [
         'cooperative_id',
         'farmer_id',
+        'full_name',
+        'national_id',
+        'phone',
+        'email',
+        'address',
         'membership_number',
         'join_date',
         'contribution_amount',
         'role',
         'status',
     ];
+
+    /**
+     * Display name: full_name if set, otherwise linked farmer's name.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        if (! empty($this->full_name)) {
+            return $this->full_name;
+        }
+        return $this->farmer?->name ?? '—';
+    }
 
     protected function casts(): array
     {

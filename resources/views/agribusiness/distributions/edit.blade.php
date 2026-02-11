@@ -10,7 +10,7 @@
         <form method="POST" action="{{ route('agribusiness.distributions.update', $distribution) }}">
             @csrf
             @method('PATCH')
-            @include('agribusiness.distributions._form', ['distribution' => $distribution])
+            @include('agribusiness.distributions._form', ['distribution' => $distribution, 'inventoryItems' => $inventoryItems ?? collect(), 'customers' => $customers ?? collect()])
             <div class="mt-6 flex gap-4">
                 <x-primary-button>Update Distribution</x-primary-button>
                 <a href="{{ route('agribusiness.distributions.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</a>

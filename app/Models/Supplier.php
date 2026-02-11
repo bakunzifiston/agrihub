@@ -36,4 +36,9 @@ class Supplier extends Model
     {
         return $this->hasMany(Contract::class);
     }
+
+    public function processingRawMaterials(): HasMany
+    {
+        return $this->hasMany(ProcessingRawMaterial::class, 'supplier_id');
+    }
 }

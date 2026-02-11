@@ -19,8 +19,8 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Raw Material</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Input</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contract</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Raw materials</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Output</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cost</th>
@@ -31,12 +31,16 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($records as $r)
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $r->raw_material }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ number_format($r->quantity_input, 2) }} {{ $r->input_unit }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $r->contract ? $r->contract->product_name . ' (' . ($r->contract->supplier?->supplier_name ?? '') . ')' : '—' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">
+                                    @foreach ($r->rawMaterials as $rm)
+                                        <span class="block">{{ $rm->raw_material }}: {{ number_format($rm->quantity_input, 2) }} {{ $rm->input_unit }}{{ $rm->supplier ? ' ← ' . $rm->supplier->supplier_name : '' }}</span>
+                                    @endforeach
+                                </td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ number_format($r->quantity_output, 2) }} {{ $r->output_unit }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-600">{{ $r->processing_date->format('M d, Y') }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $r->processing_cost ? number_format($r->processing_cost, 2) : '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $r->wastage_quantity ? number_format($r->wastage_quantity, 2) : '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $r->processing_cost ? number_format($r->processing_cost, 2) : '—' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">{{ $r->wastage_quantity ? number_format($r->wastage_quantity, 2) : '—' }}</td>
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('agribusiness.processing.edit', $r) }}" class="text-primary hover:text-primary-700 text-sm font-medium mr-3">Edit</a>
                                     <form method="POST" action="{{ route('agribusiness.processing.destroy', $r) }}" class="inline" onsubmit="return confirm('Remove this record?');">

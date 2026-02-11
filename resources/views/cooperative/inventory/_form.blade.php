@@ -3,13 +3,14 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     @if ($warehouses->isNotEmpty())
         <div class="md:col-span-2">
-            <x-input-label for="warehouse_id" value="Warehouse" />
-            <select id="warehouse_id" name="warehouse_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
-                <option value="">— Not assigned —</option>
+            <x-input-label for="warehouse_id" value="Warehouse *" />
+            <select id="warehouse_id" name="warehouse_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
+                <option value="">Select warehouse</option>
                 @foreach ($warehouses as $wh)
-                    <option value="{{ $wh->id }}" @selected(old('warehouse_id', $inventory?->warehouse_id) == $wh->id)>{{ $wh->name }}{{ $wh->location ? ' — ' . $wh->location : '' }}</option>
+                    <option value="{{ $wh->id }}" @selected(old('warehouse_id', $inventory?->warehouse_id) == $wh->id)>{{ $wh->warehouse_id ?? $wh->name }} — {{ $wh->name }}{{ $wh->city || $wh->district ? ' (' . implode(', ', array_filter([$wh->city, $wh->district])) . ')' : '' }}</option>
                 @endforeach
             </select>
+            <p class="text-xs text-gray-500 mt-1">Inventory is stored per warehouse. Add warehouses first if the list is empty.</p>
             <x-input-error class="mt-2" :messages="$errors->get('warehouse_id')" />
         </div>
     @endif

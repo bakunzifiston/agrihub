@@ -27,16 +27,18 @@ class InventoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'warehouse_id' => ['nullable', 'integer', 'exists:cooperative_warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:cooperative_warehouses,id'],
             'product_name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:100'],
             'quantity_in_stock' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
             'storage_location' => ['nullable', 'string', 'max:255'],
         ]);
+        if (isset($validated['warehouse_id']) && (int) \App\Models\CooperativeWarehouse::find($validated['warehouse_id'])->cooperative_id !== (int) auth()->id()) {
+            return back()->withErrors(['warehouse_id' => 'Invalid warehouse.']);
+        }
 
         $validated['cooperative_id'] = auth()->id();
-        $validated['warehouse_id'] = $request->input('warehouse_id') ?: null;
         $validated['last_updated'] = now();
         CooperativeInventory::create($validated);
 
@@ -61,16 +63,18 @@ class InventoryController extends Controller
         }
 
         $validated = $request->validate([
-            'warehouse_id' => ['nullable', 'integer', 'exists:cooperative_warehouses,id'],
+            'warehouse_id' => ['required', 'integer', 'exists:cooperative_warehouses,id'],
             'product_name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:100'],
             'quantity_in_stock' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
             'storage_location' => ['nullable', 'string', 'max:255'],
         ]);
+        if (isset($validated['warehouse_id']) && (int) \App\Models\CooperativeWarehouse::find($validated['warehouse_id'])->cooperative_id !== (int) auth()->id()) {
+            return back()->withErrors(['warehouse_id' => 'Invalid warehouse.']);
+        }
 
         $validated['last_updated'] = now();
-        $validated['warehouse_id'] = $request->input('warehouse_id') ?: null;
         $inventory->update($validated);
 
         return redirect()->route('cooperative.inventory.index')->with('success', 'Inventory updated.');

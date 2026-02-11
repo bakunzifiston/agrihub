@@ -10,6 +10,8 @@ class ProduceCollection extends Model
     protected $fillable = [
         'cooperative_id',
         'farmer_id',
+        'member_id',
+        'contributor_name',
         'product_name',
         'collection_date',
         'quantity_collected',
@@ -38,5 +40,22 @@ class ProduceCollection extends Model
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'farmer_id');
+    }
+
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(CooperativeMember::class, 'member_id');
+    }
+
+    /** Name of the member/farmer for display (member, then manual name, then farmer). */
+    public function getContributorNameAttribute(): string
+    {
+        if ($this->member) {
+            return $this->member->display_name;
+        }
+        if (! empty($this->attributes['contributor_name'] ?? null)) {
+            return (string) $this->attributes['contributor_name'];
+        }
+        return $this->farmer?->name ?? '—';
     }
 }

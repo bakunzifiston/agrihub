@@ -23,6 +23,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Buyer</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -32,8 +33,16 @@
                     @foreach ($sales as $sale)
                         <tr>
                             <td class="px-4 py-3 text-sm text-gray-900">{{ $sale->product_name }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->buyer_name }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->buyer_display_name }}</td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->quantity_sold }} {{ $sale->unit }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                @if ($sale->output)
+                                    In stock: <strong>{{ number_format($sale->in_stock_quantity, 2) }} {{ $sale->unit }}</strong>
+                                    <br><span class="text-xs {{ $sale->remaining_stock !== null && $sale->remaining_stock < 0 ? 'text-red-600' : '' }}">Remaining: {{ number_format($sale->remaining_stock, 2) }} {{ $sale->unit }}</span>
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ number_format($sale->total_amount, 2) }}</td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $sale->sale_date->format('M d, Y') }}</td>
                             <td class="px-4 py-3 text-right">

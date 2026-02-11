@@ -9,6 +9,8 @@ class FarmSale extends Model
 {
     protected $fillable = [
         'farmer_id',
+        'farm_output_id',
+        'client_id',
         'buyer_type',
         'buyer_name',
         'product_name',
@@ -34,5 +36,38 @@ class FarmSale extends Model
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'farmer_id');
+    }
+
+    public function output(): BelongsTo
+    {
+        return $this->belongsTo(FarmOutput::class, 'farm_output_id');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(FarmerClient::class, 'client_id');
+    }
+
+    /** Display buyer name: linked client or stored buyer_name */
+    public function getBuyerDisplayNameAttribute(): string
+    {
+        return $this->client?->name ?? $this->buyer_name ?? '';
+    }
+
+    /** In-stock quantity when sale is linked to an output; null otherwise */
+    public function getInStockQuantityAttribute(): ?float
+    {
+        return $this->output ? (float) $this->output->quantity_available : null;
+    }
+
+    /** Remaining stock (output quantity - quantity sold) when linked; null otherwise */
+    public function getRemainingStockAttribute(): ?float
+    {
+        if (! $this->output) {
+            return null;
+        }
+        $inStock = (float) $this->output->quantity_available;
+        $sold = (float) $this->quantity_sold;
+        return $inStock - $sold;
     }
 }

@@ -28,14 +28,18 @@ class MemberController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'farmer_id' => ['required', 'exists:users,id'],
+            'farmer_id' => ['nullable', 'exists:users,id'],
+            'full_name' => ['required', 'string', 'max:255'],
+            'national_id' => ['nullable', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
             'membership_number' => ['nullable', 'string', 'max:100'],
             'join_date' => ['nullable', 'date'],
             'contribution_amount' => ['nullable', 'numeric', 'min:0'],
             'role' => ['required', 'string', 'in:member,leader'],
             'status' => ['required', 'string', 'in:active,inactive,suspended'],
         ]);
-
         $validated['cooperative_id'] = auth()->id();
         $validated['contribution_amount'] = $validated['contribution_amount'] ?? 0;
 
@@ -61,14 +65,18 @@ class MemberController extends Controller
         }
 
         $validated = $request->validate([
-            'farmer_id' => ['required', 'exists:users,id'],
+            'farmer_id' => ['nullable', 'exists:users,id'],
+            'full_name' => ['required', 'string', 'max:255'],
+            'national_id' => ['nullable', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
             'membership_number' => ['nullable', 'string', 'max:100'],
             'join_date' => ['nullable', 'date'],
             'contribution_amount' => ['nullable', 'numeric', 'min:0'],
             'role' => ['required', 'string', 'in:member,leader'],
             'status' => ['required', 'string', 'in:active,inactive,suspended'],
         ]);
-
         $validated['contribution_amount'] = $validated['contribution_amount'] ?? 0;
         $member->update($validated);
 

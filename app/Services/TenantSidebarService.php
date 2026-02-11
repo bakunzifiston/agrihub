@@ -41,7 +41,14 @@ class TenantSidebarService
         'sales_income' => [
             'label' => 'Sales & Income',
             'tables' => [
+                'farmer.clients.index' => 'Clients',
                 'farmer.sales.index' => 'Sales',
+            ],
+        ],
+        'employees' => [
+            'label' => 'Employees',
+            'tables' => [
+                'farmer.employees.index' => 'Employees',
             ],
         ],
         'reports' => [
@@ -53,6 +60,12 @@ class TenantSidebarService
     ];
 
     public const COOPERATIVE_SIDEBAR = [
+        'cooperative_profile' => [
+            'label' => 'Cooperative Profile',
+            'tables' => [
+                'cooperative.cooperative-profile.index' => 'Profile',
+            ],
+        ],
         'member_management' => [
             'label' => 'Members',
             'tables' => [
@@ -65,10 +78,30 @@ class TenantSidebarService
                 'cooperative.collections.index' => 'Collections',
             ],
         ],
+        'crop_livestock' => [
+            'label' => 'Crop & Livestock',
+            'tables' => [
+                'cooperative.crops.index' => 'Crops',
+                'cooperative.livestock.index' => 'Livestock',
+            ],
+        ],
+        'warehouses' => [
+            'label' => 'Warehouses',
+            'tables' => [
+                'cooperative.warehouses.index' => 'Warehouses',
+            ],
+        ],
         'cooperative_inventory' => [
             'label' => 'Inventory',
             'tables' => [
                 'cooperative.inventory.index' => 'Inventory',
+            ],
+        ],
+        'orders' => [
+            'label' => 'Orders',
+            'tables' => [
+                'cooperative.clients.index' => 'Clients',
+                'cooperative.orders.index' => 'Orders',
             ],
         ],
         'payments_to_farmers' => [
@@ -104,11 +137,24 @@ class TenantSidebarService
                 'agribusiness.processing.index' => 'Processing',
             ],
         ],
+        'warehouses' => [
+            'label' => 'Warehouses',
+            'tables' => [
+                'agribusiness.warehouses.index' => 'Warehouses',
+            ],
+        ],
         'inventory_distribution' => [
             'label' => 'Inventory & Distribution',
             'tables' => [
+                'agribusiness.customers.index' => 'Customers',
                 'agribusiness.inventory.index' => 'Inventory',
                 'agribusiness.distributions.index' => 'Distributions',
+            ],
+        ],
+        'employees' => [
+            'label' => 'Employees',
+            'tables' => [
+                'agribusiness.employees.index' => 'Employees',
             ],
         ],
         'sales_financial_reports' => [
@@ -123,8 +169,8 @@ class TenantSidebarService
     {
         $sidebar = match ($user->tenant_type) {
             User::TENANT_FARMER => array_merge(self::FARMER_SIDEBAR, self::getUsersRolesSidebar('farmer')),
-            User::TENANT_COOPERATIVE => array_merge(self::COOPERATIVE_SIDEBAR, self::getWarehousesSidebar('cooperative'), self::getUsersRolesSidebar('cooperative')),
-            User::TENANT_AGRIBUSINESS => array_merge(self::AGRIBUSINESS_SIDEBAR, self::getWarehousesSidebar('agribusiness'), self::getUsersRolesSidebar('agribusiness')),
+            User::TENANT_COOPERATIVE => array_merge(self::COOPERATIVE_SIDEBAR, self::getUsersRolesSidebar('cooperative')),
+            User::TENANT_AGRIBUSINESS => array_merge(self::AGRIBUSINESS_SIDEBAR, self::getUsersRolesSidebar('agribusiness')),
             default => [],
         };
 
@@ -132,7 +178,7 @@ class TenantSidebarService
         $filtered = [];
 
         foreach ($sidebar as $featureKey => $config) {
-            if ($featureKey === 'users_roles' || $featureKey === 'warehouses' || $featureService->isEnabled($user, $featureKey)) {
+            if ($featureKey === 'users_roles' || $featureKey === 'warehouses' || $featureKey === 'employees' || $featureService->isEnabled($user, $featureKey)) {
                 $filtered[$featureKey] = $config;
             }
         }

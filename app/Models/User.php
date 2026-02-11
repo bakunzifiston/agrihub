@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -124,6 +125,16 @@ class User extends Authenticatable
         return $this->hasMany(FarmOutput::class, 'farmer_id');
     }
 
+    public function farmerClients(): HasMany
+    {
+        return $this->hasMany(FarmerClient::class, 'farmer_id');
+    }
+
+    public function farmerEmployees(): HasMany
+    {
+        return $this->hasMany(FarmerEmployee::class, 'farmer_id');
+    }
+
     public function farmSales(): HasMany
     {
         return $this->hasMany(FarmSale::class, 'farmer_id');
@@ -148,6 +159,31 @@ class User extends Authenticatable
     public function cooperativeMembers(): HasMany
     {
         return $this->hasMany(CooperativeMember::class, 'cooperative_id');
+    }
+
+    public function cooperativeProfile(): HasOne
+    {
+        return $this->hasOne(CooperativeProfile::class, 'cooperative_id');
+    }
+
+    public function cooperativeCrops(): HasMany
+    {
+        return $this->hasMany(CooperativeCrop::class, 'cooperative_id');
+    }
+
+    public function cooperativeLivestock(): HasMany
+    {
+        return $this->hasMany(CooperativeLivestock::class, 'cooperative_id');
+    }
+
+    public function cooperativeClients(): HasMany
+    {
+        return $this->hasMany(CooperativeClient::class, 'cooperative_id');
+    }
+
+    public function cooperativeOrders(): HasMany
+    {
+        return $this->hasMany(CooperativeOrder::class, 'cooperative_id');
     }
 
     public function produceCollections(): HasMany
@@ -210,6 +246,16 @@ class User extends Authenticatable
     public function agribusinessInventory(): HasMany
     {
         return $this->hasMany(AgribusinessInventory::class, 'agribusiness_id');
+    }
+
+    public function agribusinessCustomers(): HasMany
+    {
+        return $this->hasMany(AgribusinessCustomer::class, 'agribusiness_id');
+    }
+
+    public function agribusinessEmployees(): HasMany
+    {
+        return $this->hasMany(AgribusinessEmployee::class, 'agribusiness_id');
     }
 
     public function distributions(): HasMany

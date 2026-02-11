@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Agribusiness;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProcessingRawMaterial;
 use App\Models\ProcessingRecord;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,22 +13,27 @@ class ProcessingController extends Controller
 {
     public function index(): View
     {
-        $records = auth()->user()->processingRecords()->latest()->get();
+        $records = auth()->user()->processingRecords()->with(['contract.supplier', 'rawMaterials.supplier'])->latest()->get();
 
         return view('agribusiness.processing.index', compact('records'));
     }
 
     public function create(): View
     {
-        return view('agribusiness.processing.create');
+        $contracts = auth()->user()->contracts()->with('supplier')->orderBy('product_name')->get();
+        $suppliers = auth()->user()->suppliers()->orderBy('supplier_name')->get();
+        return view('agribusiness.processing.create', compact('contracts', 'suppliers'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'raw_material' => ['required', 'string', 'max:255'],
-            'quantity_input' => ['required', 'numeric', 'min:0'],
-            'input_unit' => ['required', 'string', 'max:50'],
+            'contract_id' => ['nullable', 'integer', 'exists:contracts,id'],
+            'raw_materials' => ['required', 'array', 'min:1'],
+            'raw_materials.*.raw_material' => ['required', 'string', 'max:255'],
+            'raw_materials.*.quantity_input' => ['required', 'numeric', 'min:0'],
+            'raw_materials.*.input_unit' => ['required', 'string', 'max:50'],
+            'raw_materials.*.supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
             'quantity_output' => ['required', 'numeric', 'min:0'],
             'output_unit' => ['required', 'string', 'max:50'],
             'processing_date' => ['required', 'date'],
@@ -36,7 +42,25 @@ class ProcessingController extends Controller
         ]);
 
         $validated['agribusiness_id'] = auth()->id();
-        ProcessingRecord::create($validated);
+        $validated['contract_id'] = $validated['contract_id'] ?: null;
+        $record = ProcessingRecord::create([
+            'agribusiness_id' => $validated['agribusiness_id'],
+            'contract_id' => $validated['contract_id'],
+            'quantity_output' => $validated['quantity_output'],
+            'output_unit' => $validated['output_unit'],
+            'processing_date' => $validated['processing_date'],
+            'processing_cost' => $validated['processing_cost'] ?? null,
+            'wastage_quantity' => $validated['wastage_quantity'] ?? null,
+        ]);
+
+        foreach ($validated['raw_materials'] as $rm) {
+            $record->rawMaterials()->create([
+                'raw_material' => $rm['raw_material'],
+                'quantity_input' => $rm['quantity_input'],
+                'input_unit' => $rm['input_unit'],
+                'supplier_id' => ! empty($rm['supplier_id']) ? $rm['supplier_id'] : null,
+            ]);
+        }
 
         return redirect()->route('agribusiness.processing.index')->with('success', 'Processing record added.');
     }
@@ -46,8 +70,9 @@ class ProcessingController extends Controller
         if ($processing->agribusiness_id !== auth()->id()) {
             abort(403);
         }
-
-        return view('agribusiness.processing.edit', compact('processing'));
+        $contracts = auth()->user()->contracts()->with('supplier')->orderBy('product_name')->get();
+        $suppliers = auth()->user()->suppliers()->orderBy('supplier_name')->get();
+        return view('agribusiness.processing.edit', compact('processing', 'contracts', 'suppliers'));
     }
 
     public function update(Request $request, ProcessingRecord $processing): RedirectResponse
@@ -57,9 +82,12 @@ class ProcessingController extends Controller
         }
 
         $validated = $request->validate([
-            'raw_material' => ['required', 'string', 'max:255'],
-            'quantity_input' => ['required', 'numeric', 'min:0'],
-            'input_unit' => ['required', 'string', 'max:50'],
+            'contract_id' => ['nullable', 'integer', 'exists:contracts,id'],
+            'raw_materials' => ['required', 'array', 'min:1'],
+            'raw_materials.*.raw_material' => ['required', 'string', 'max:255'],
+            'raw_materials.*.quantity_input' => ['required', 'numeric', 'min:0'],
+            'raw_materials.*.input_unit' => ['required', 'string', 'max:50'],
+            'raw_materials.*.supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
             'quantity_output' => ['required', 'numeric', 'min:0'],
             'output_unit' => ['required', 'string', 'max:50'],
             'processing_date' => ['required', 'date'],
@@ -67,7 +95,24 @@ class ProcessingController extends Controller
             'wastage_quantity' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $processing->update($validated);
+        $processing->update([
+            'contract_id' => $validated['contract_id'] ?: null,
+            'quantity_output' => $validated['quantity_output'],
+            'output_unit' => $validated['output_unit'],
+            'processing_date' => $validated['processing_date'],
+            'processing_cost' => $validated['processing_cost'] ?? null,
+            'wastage_quantity' => $validated['wastage_quantity'] ?? null,
+        ]);
+
+        $processing->rawMaterials()->delete();
+        foreach ($validated['raw_materials'] as $rm) {
+            $processing->rawMaterials()->create([
+                'raw_material' => $rm['raw_material'],
+                'quantity_input' => $rm['quantity_input'],
+                'input_unit' => $rm['input_unit'],
+                'supplier_id' => ! empty($rm['supplier_id']) ? $rm['supplier_id'] : null,
+            ]);
+        }
 
         return redirect()->route('agribusiness.processing.index')->with('success', 'Processing record updated.');
     }

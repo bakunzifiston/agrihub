@@ -9,7 +9,7 @@
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 max-w-2xl">
         <form method="POST" action="{{ route('agribusiness.distributions.store') }}">
             @csrf
-            @include('agribusiness.distributions._form', ['distribution' => null])
+            @include('agribusiness.distributions._form', ['distribution' => null, 'inventoryItems' => $inventoryItems ?? collect(), 'customers' => $customers ?? collect()])
             <div class="mt-6 flex gap-4">
                 <x-primary-button>Add Distribution</x-primary-button>
                 <a href="{{ route('agribusiness.distributions.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</a>
