@@ -75,7 +75,6 @@ class TenantAuthController extends Controller
         }
         if ($tenantType === 'agribusiness') {
             $rules['business_name'] = ['required', 'string', 'max:255'];
-            $rules['business_type'] = ['required', 'string', 'in:Buyer,Processor,Exporter,Retailer'];
         }
 
         $validated = $request->validate($rules);
@@ -96,7 +95,6 @@ class TenantAuthController extends Controller
                 'cooperative_focus' => $validated['cooperative_focus'] ?? null,
                 'members_range' => $validated['members_range'] ?? null,
                 'business_name' => $validated['business_name'] ?? null,
-                'business_type' => $validated['business_type'] ?? null,
             ]);
 
             $orgName = match ($tenantType) {

@@ -82,23 +82,12 @@
             </div>
         @endif
 
-        {{-- Agribusiness: business name, business type, location --}}
+        {{-- Agribusiness: business name --}}
         @if ($tenantType === 'agribusiness')
             <div class="mt-4">
                 <x-input-label for="business_name" value="Business Name" />
                 <x-text-input id="business_name" class="block mt-1 w-full" type="text" name="business_name" :value="old('business_name')" required />
                 <x-input-error :messages="$errors->get('business_name')" class="mt-2" />
-            </div>
-            <div class="mt-4">
-                <x-input-label for="business_type" value="Business Type" />
-                <select id="business_type" name="business_type" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
-                    <option value="">Select</option>
-                    <option value="Buyer" @selected(old('business_type') === 'Buyer')>Buyer</option>
-                    <option value="Processor" @selected(old('business_type') === 'Processor')>Processor</option>
-                    <option value="Exporter" @selected(old('business_type') === 'Exporter')>Exporter</option>
-                    <option value="Retailer" @selected(old('business_type') === 'Retailer')>Retailer</option>
-                </select>
-                <x-input-error :messages="$errors->get('business_type')" class="mt-2" />
             </div>
         @endif
 
