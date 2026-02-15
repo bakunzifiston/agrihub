@@ -135,6 +135,11 @@ class User extends Authenticatable
         return $this->hasMany(FarmerEmployee::class, 'farmer_id');
     }
 
+    public function preOrderListings(): HasMany
+    {
+        return $this->hasMany(PreOrderListing::class, 'farmer_id');
+    }
+
     public function farmSales(): HasMany
     {
         return $this->hasMany(FarmSale::class, 'farmer_id');

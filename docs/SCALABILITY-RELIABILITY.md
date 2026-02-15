@@ -99,16 +99,7 @@ Ensure Redis is installed and `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT` are s
 
 ---
 
-## 4. Optional: health endpoint for monitoring
+## 4. Health endpoints
 
-A simple route that returns 200 when the app and database are reachable helps uptime checks and load balancers:
-
-```php
-// routes/web.php or routes/api.php
-Route::get('/up', function () {
-    \Illuminate\Support\Facades\DB::connection()->getPdo();
-    return response()->json(['status' => 'ok'], 200);
-})->name('health');
-```
-
-Keep this route lightweight (no auth, minimal logic). If you use Redis for cache/sessions, you can optionally ping Redis and include it in the response.
+- **`/up`** – Laravel’s built-in health route (see `health: '/up'` in `bootstrap/app.php`). Use it for “app is running” checks.
+- **`/health`** – Custom route that checks database connectivity: returns **200** with `{"status":"ok"}` when the DB is reachable, and **503** with `{"status":"unhealthy","message":"Database unreachable"}` when the DB is not (so load balancers can distinguish app-up vs. temporary DB issues). No auth; keep it lightweight.

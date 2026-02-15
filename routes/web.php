@@ -8,6 +8,8 @@ use App\Http\Controllers\CooperativeDashboardController;
 use App\Http\Controllers\FarmerDashboardController;
 use App\Http\Controllers\Farmer\ClientController as FarmerClientController;
 use App\Http\Controllers\Farmer\EmployeeController as FarmerEmployeeController;
+use App\Http\Controllers\Farmer\PreOrderListingController as FarmerPreOrderListingController;
+use App\Http\Controllers\Farmer\PreOrderController as FarmerPreOrderController;
 use App\Http\Controllers\Farmer\CropController;
 use App\Http\Controllers\Farmer\FarmInputApplicationController;
 use App\Http\Controllers\Farmer\FarmInputController;
@@ -49,10 +51,14 @@ Route::get('/', function () {
     return view('landing');
 })->name('home');
 
-// Health check for monitoring / load balancers (no auth)
-Route::get('/up', function () {
-    DB::connection()->getPdo();
-    return response()->json(['status' => 'ok'], 200);
+// DB-aware health check for load balancers/monitoring (no auth). Use /up for framework default.
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        return response()->json(['status' => 'ok'], 200);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'unhealthy', 'message' => 'Database unreachable'], 503);
+    }
 })->name('health');
 
 Route::get('/dashboard', function () {
@@ -84,6 +90,8 @@ Route::middleware(['auth', 'verified', 'tenant.approved', 'tenant.type:farmer'])
     Route::resource('clients', FarmerClientController::class)->except(['show'])->parameters(['clients' => 'client']);
     Route::resource('employees', FarmerEmployeeController::class)->except(['show'])->parameters(['employees' => 'employee']);
     Route::resource('sales', FarmSaleController::class)->except(['show'])->parameters(['sale' => 'farmSale']);
+    Route::resource('pre-order-listings', FarmerPreOrderListingController::class)->except(['show'])->parameters(['pre-order-listings' => 'preOrderListing']);
+    Route::get('pre-orders', [FarmerPreOrderController::class, 'index'])->name('pre-orders.index');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/users', [TenantUserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [TenantUserController::class, 'create'])->name('users.create');

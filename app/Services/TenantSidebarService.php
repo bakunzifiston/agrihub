@@ -45,6 +45,13 @@ class TenantSidebarService
                 'farmer.sales.index' => 'Sales',
             ],
         ],
+        'marketplace' => [
+            'label' => 'Marketplace (Pre-order)',
+            'tables' => [
+                'farmer.pre-order-listings.index' => 'Pre-order Listings',
+                'farmer.pre-orders.index' => 'Pre-orders',
+            ],
+        ],
         'employees' => [
             'label' => 'Employees',
             'tables' => [
@@ -178,7 +185,7 @@ class TenantSidebarService
         $filtered = [];
 
         foreach ($sidebar as $featureKey => $config) {
-            if ($featureKey === 'users_roles' || $featureKey === 'warehouses' || $featureKey === 'employees' || $featureService->isEnabled($user, $featureKey)) {
+            if ($featureKey === 'users_roles' || $featureKey === 'warehouses' || $featureKey === 'employees' || $featureKey === 'marketplace' || $featureService->isEnabled($user, $featureKey)) {
                 $filtered[$featureKey] = $config;
             }
         }
