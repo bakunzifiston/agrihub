@@ -20,7 +20,7 @@ class PreOrderListingController extends Controller
 
     public function create(): View
     {
-        $crops = auth()->user()->crops()->whereIn('crop_status', ['planted', 'growing'])->orderBy('crop_name')->get();
+        $crops = auth()->user()->crops()->orderBy('crop_name')->get();
         $outputs = auth()->user()->farmOutputs()->orderBy('product_name')->get();
         return view('farmer.pre-order-listings.create', compact('crops', 'outputs'));
     }
@@ -28,7 +28,7 @@ class PreOrderListingController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'source' => ['required', 'string', 'in:crop,output'],
+            'source' => ['required', 'string', 'in:crop,output,manual'],
             'crop_id' => ['required_if:source,crop', 'nullable', 'integer', 'exists:crops,id'],
             'farm_output_id' => ['required_if:source,output', 'nullable', 'integer', 'exists:farm_outputs,id'],
             'title' => ['required', 'string', 'max:255'],
@@ -47,6 +47,9 @@ class PreOrderListingController extends Controller
             if (empty($validated['title'])) {
                 $validated['title'] = $crop->crop_name . ($crop->crop_type ? " ({$crop->crop_type})" : '');
             }
+        } elseif ($validated['source'] === 'manual') {
+            $validated['crop_id'] = null;
+            $validated['farm_output_id'] = null;
         } else {
             $output = FarmOutput::where('id', $validated['farm_output_id'])->where('farmer_id', auth()->id())->firstOrFail();
             $validated['farm_output_id'] = $output->id;

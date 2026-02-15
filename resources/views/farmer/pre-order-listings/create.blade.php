@@ -13,12 +13,16 @@
                 <div>
                     <x-input-label for="source" value="List from *" />
                     <select id="source" name="source" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
-                        <option value="crop" @selected(old('source') === 'crop')>Crop (planted / growing)</option>
+                        <option value="crop" @selected(old('source') === 'crop')>Crop (planted / growing / harvested)</option>
                         <option value="output" @selected(old('source') === 'output')>Harvest output (available stock)</option>
+                        <option value="manual" @selected(old('source') === 'manual')>Manual listing (no crop/output link)</option>
                     </select>
                     <x-input-error class="mt-2" :messages="$errors->get('source')" />
                 </div>
 
+                @if ($crops->isEmpty() && $outputs->isEmpty())
+                    <p class="text-sm text-amber-700 bg-amber-50 p-3 rounded-md">You have no crops or harvest outputs yet. Use <strong>Manual listing</strong> below to add a product by name, or add crops/outputs first from the sidebar.</p>
+                @endif
                 <div id="crop-field" class="source-field">
                     <x-input-label for="crop_id" value="Select crop *" />
                     <select id="crop_id" name="crop_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
@@ -90,12 +94,19 @@
             cropId.required = true;
             outputId.required = false;
             outputId.value = '';
-        } else {
+        } else if (this.value === 'output') {
             cropField.style.display = 'none';
             outputField.style.display = 'block';
             cropId.required = false;
             outputId.required = true;
             cropId.value = '';
+        } else {
+            cropField.style.display = 'none';
+            outputField.style.display = 'none';
+            cropId.required = false;
+            outputId.required = false;
+            cropId.value = '';
+            outputId.value = '';
         }
     });
     document.getElementById('crop_id').addEventListener('change', function () {
@@ -113,9 +124,13 @@
         document.getElementById('unit').value = opt.getAttribute('data-unit') || 'kg';
         document.getElementById('expected_harvest_date').value = opt.getAttribute('data-harvest') || '';
     });
-    if (document.getElementById('source').value === 'output') {
+    var src = document.getElementById('source').value;
+    if (src === 'output') {
         document.getElementById('crop-field').style.display = 'none';
         document.getElementById('output-field').style.display = 'block';
+    } else if (src === 'manual') {
+        document.getElementById('crop-field').style.display = 'none';
+        document.getElementById('output-field').style.display = 'none';
     }
     </script>
 </x-tenant-layout>

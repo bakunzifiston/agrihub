@@ -16,7 +16,7 @@
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
         <p class="text-sm text-gray-600 mb-4">List crops or harvests for pre-order on the marketplace. Sync these with your WordPress WooCommerce store so customers can pre-order.</p>
         @if ($listings->isEmpty())
-            <p class="text-gray-600">No pre-order listings yet. Add a listing from your crops (planted/growing) or from your harvest outputs.</p>
+            <p class="text-gray-600">No pre-order listings yet. Add a listing from your crops, harvest outputs, or create a manual listing.</p>
             <a href="{{ route('farmer.pre-order-listings.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-700">Add Listing</a>
         @else
             <div class="overflow-x-auto">

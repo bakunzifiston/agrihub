@@ -36,11 +36,11 @@ return [
     ],
 
     'woocommerce' => [
-        'api_token' => env('agrihub_secret_123'),
-        'webhook_secret' => env('woocommerce_secret_123'),
-        'store_url' => env('https://sandbox.redp.rw'),
-        'consumer_key' => env('ck_42a40a8f35fa46ce23d12444ddc15f0916928124'),
-        'consumer_secret' => env('cs_b9e97f1fdc6ad2847c3fe8aa1650e70cdf49ee0f'),
+        'api_token' => env('WOOCOMMERCE_API_TOKEN'),
+        'webhook_secret' => env('WOOCOMMERCE_WEBHOOK_SECRET'),
+        'store_url' => env('WOOCOMMERCE_STORE_URL'),
+        'consumer_key' => env('WOOCOMMERCE_CONSUMER_KEY'),
+        'consumer_secret' => env('WOOCOMMERCE_CONSUMER_SECRET'),
     ],
 
 ];
