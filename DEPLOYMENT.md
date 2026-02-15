@@ -1,5 +1,7 @@
 # Deploying AgriHub (e.g. cPanel)
 
+For **scalability and reliability** with many users, see [docs/SCALABILITY-RELIABILITY.md](docs/SCALABILITY-RELIABILITY.md).
+
 ## Fix "Vite manifest not found" on cPanel
 
 The app now has a **fallback**: if `public/build/manifest.json` is missing, it loads Tailwind and Alpine from a CDN so the site still works. For the best experience (your theme, Chart.js, etc.), build assets and upload them.

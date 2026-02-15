@@ -42,11 +42,18 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Tenant\TenantPermissionController;
 use App\Http\Controllers\Tenant\TenantRoleController;
 use App\Http\Controllers\Tenant\TenantUserController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('landing');
 })->name('home');
+
+// Health check for monitoring / load balancers (no auth)
+Route::get('/up', function () {
+    DB::connection()->getPdo();
+    return response()->json(['status' => 'ok'], 200);
+})->name('health');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
