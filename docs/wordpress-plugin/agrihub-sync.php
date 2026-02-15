@@ -70,16 +70,47 @@ add_action('admin_enqueue_scripts', function ($hook) {
     ]);
     wp_add_inline_script('jquery', "
         jQuery(function($) {
-            $('#agrihub-sync-now').on('click', function(e) {
+            $('#agrihub-preview').on('click', function(e) {
                 e.preventDefault();
                 var btn = $(this);
-                var msg = $('#agrihub-sync-message');
-                msg.removeClass('notice-success notice-error').hide();
-                btn.prop('disabled', true).text('Syncing...');
+                var box = $('#agrihub-preview-results');
+                box.hide().empty();
+                btn.prop('disabled', true).text('Loading...');
                 $.post(ajaxurl, {
-                    action: 'agrihub_sync_listings',
+                    action: 'agrihub_preview_listings',
                     nonce: (typeof agrihubSync !== 'undefined' && agrihubSync.nonce) ? agrihubSync.nonce : ''
                 }).done(function(r) {
+                    if (r.success && r.data) {
+                        var list = r.data.listings || [];
+                        if (list.length === 0) {
+                            box.html('<p><em>No active listings in AgriHub. Add listings in AgriHub first.</em></p>');
+                        } else {
+                            var html = '<table class=\"widefat striped\"><thead><tr><th style=\"width:40px;\">Approve</th><th>Product</th><th>Qty / Unit</th><th>Price</th><th>Harvest</th><th>Farmer</th></tr></thead><tbody>';
+                            function esc(s) { return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+                            list.forEach(function(item) {
+                                var farmer = item.farmer || {};
+                                html += '<tr><td><input type=\"checkbox\" class=\"agrihub-approve\" value=\"' + esc(item.id) + '\" checked /></td><td>' + esc(item.title) + '</td><td>' + esc(item.available_to_sell) + ' ' + esc(item.unit) + '</td><td>' + esc(item.price_per_unit) + '</td><td>' + esc(item.expected_harvest_date || '—') + '</td><td>' + esc(farmer.name) + '</td></tr>';
+                            });
+                            html += '</tbody></table><p class=\"description\">Check to approve (sync), uncheck to reject. <strong>' + list.length + '</strong> listing(s) available.</p>';
+                            html += '<p><button type=\"button\" id=\"agrihub-sync-selected\" class=\"button button-primary\">Sync selected only</button> <button type=\"button\" id=\"agrihub-sync-all\" class=\"button\">Sync all</button></p>';
+                            box.html(html);
+                        }
+                        box.show();
+                    } else {
+                        box.html('<p class=\"notice notice-error\"><strong>Error:</strong> ' + (r.data || 'Could not fetch listings') + '</p>').show();
+                    }
+                }).fail(function(xhr) {
+                    box.html('<p class=\"notice notice-error\"><strong>Request failed.</strong> Check API URL and token.</p>').show();
+                }).always(function() {
+                    btn.prop('disabled', false).text('Preview listings from AgriHub');
+                });
+            });
+            function doSync(listingIds) {
+                var msg = $('#agrihub-sync-message');
+                msg.removeClass('notice-success notice-error').hide();
+                var data = { action: 'agrihub_sync_listings', nonce: (typeof agrihubSync !== 'undefined' && agrihubSync.nonce) ? agrihubSync.nonce : '' };
+                if (listingIds && listingIds.length) data.listing_ids = listingIds;
+                $.post(ajaxurl, data).done(function(r) {
                     if (r.success) {
                         msg.addClass('notice-success').html('<p>Synced ' + (r.data && r.data.count !== undefined ? r.data.count : 0) + ' products from AgriHub.</p>').show();
                     } else {
@@ -87,12 +118,80 @@ add_action('admin_enqueue_scripts', function ($hook) {
                     }
                 }).fail(function(xhr, status, err) {
                     msg.addClass('notice-error').html('<p><strong>Request failed.</strong> ' + (xhr.responseText || err || 'Check API URL, token, and that AgriHub is reachable from this server.') + '</p>').show();
-                }).always(function() {
-                    btn.prop('disabled', false).text('Sync from AgriHub now');
                 });
+            }
+            $(document).on('click', '#agrihub-sync-selected', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                var ids = [];
+                $('.agrihub-approve:checked').each(function() { ids.push($(this).val()); });
+                if (ids.length === 0) {
+                    alert('Select at least one listing to sync.');
+                    return;
+                }
+                btn.prop('disabled', true).text('Syncing...');
+                doSync(ids);
+                setTimeout(function() { btn.prop('disabled', false).text('Sync selected only'); }, 2000);
+            });
+            $(document).on('click', '#agrihub-sync-all', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                btn.prop('disabled', true).text('Syncing...');
+                doSync(null);
+                setTimeout(function() { btn.prop('disabled', false).text('Sync all'); }, 2000);
+            });
+            $('#agrihub-sync-now').on('click', function(e) {
+                e.preventDefault();
+                var btn = $(this);
+                btn.prop('disabled', true).text('Syncing...');
+                doSync(null);
+                setTimeout(function() { btn.prop('disabled', false).text('Sync from AgriHub now'); }, 2000);
             });
         });
     ", 'after');
+});
+
+/**
+ * AJAX handler for preview (fetch listings without syncing).
+ */
+add_action('wp_ajax_agrihub_preview_listings', function () {
+    check_ajax_referer('agrihub_sync', 'nonce');
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Unauthorized');
+    }
+
+    $api_url   = get_option('agrihub_api_url');
+    $api_token = get_option('agrihub_api_token');
+
+    if (empty($api_url) || empty($api_token)) {
+        wp_send_json_error('Configure AgriHub API URL and token first.');
+    }
+
+    $api_url = rtrim($api_url, '/');
+    $response = wp_remote_get($api_url . '/listings', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $api_token,
+            'Content-Type'  => 'application/json',
+        ],
+        'timeout' => 30,
+    ]);
+
+    if (is_wp_error($response)) {
+        wp_send_json_error($response->get_error_message());
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    $body = wp_remote_retrieve_body($response);
+
+    if ($code !== 200) {
+        $decoded = json_decode($body, true);
+        wp_send_json_error('API returned ' . $code . (isset($decoded['message']) ? ': ' . $decoded['message'] : ''));
+    }
+
+    $data     = json_decode($body, true);
+    $listings = $data['data'] ?? [];
+
+    wp_send_json_success(['listings' => is_array($listings) ? $listings : []]);
 });
 
 /**
@@ -136,14 +235,21 @@ add_action('wp_ajax_agrihub_sync_listings', function () {
         wp_send_json_error($msg);
     }
 
-    $data = json_decode($body, true);
+    $data     = json_decode($body, true);
     $listings = $data['data'] ?? [];
 
     if (!is_array($listings)) {
         wp_send_json_error('Invalid API response format.');
     }
 
-    $count = agrihub_sync_create_products($listings);
+    $listing_ids = isset($_POST['listing_ids']) && is_array($_POST['listing_ids']) ? array_map('intval', $_POST['listing_ids']) : null;
+    if ($listing_ids !== null && !empty($listing_ids)) {
+        $listings = array_filter($listings, function ($l) use ($listing_ids) {
+            return in_array((int) ($l['id'] ?? 0), $listing_ids, true);
+        });
+    }
+
+    $count = agrihub_sync_create_products(array_values($listings));
     wp_send_json_success(['count' => $count]);
 });
 
@@ -390,11 +496,13 @@ function agrihub_sync_render_settings_page() {
 
         <hr />
 
-        <h2>Sync Products</h2>
-        <p>Click below to fetch active pre-order listings from AgriHub and create/update WooCommerce products.</p>
+        <h2>Preview &amp; Sync</h2>
+        <p><strong>Preview</strong> fetches listings and lets you approve/reject each. Uncheck to reject; checked items sync when you click <strong>Sync selected only</strong>. Or use <strong>Sync all</strong> to skip selection.</p>
+        <div id="agrihub-preview-results" style="margin: 1em 0; display:none;"></div>
         <div id="agrihub-sync-message" class="notice" style="display:none; margin: 1em 0;"></div>
         <p>
-            <button type="button" id="agrihub-sync-now" class="button button-primary">Sync from AgriHub now</button>
+            <button type="button" id="agrihub-preview" class="button">Preview listings from AgriHub</button>
+            <button type="button" id="agrihub-sync-now" class="button button-primary">Sync all (no preview)</button>
             <?php
             $sync_url = add_query_arg([
                 'page'    => 'agrihub-sync',
