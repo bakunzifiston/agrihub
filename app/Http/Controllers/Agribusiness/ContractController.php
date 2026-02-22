@@ -13,9 +13,38 @@ class ContractController extends Controller
 {
     public function index(): View
     {
-        $contracts = auth()->user()->contracts()->with('supplier')->latest()->get();
+        $user = auth()->user();
+        $contracts = $user->contracts()->with('supplier')->latest()->get();
 
-        return view('agribusiness.contracts.index', compact('contracts'));
+        $activeContracts = $contracts->where('contract_status', 'active');
+        $totalValue = $activeContracts->sum(fn ($c) => ($c->contract_quantity ?? 0) * ($c->price_per_unit ?? 0));
+        $pendingContracts = $contracts->where('contract_status', 'pending')->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Contracts',
+                'value' => $contracts->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Active',
+                'value' => $activeContracts->count(),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Total Value',
+                'value' => number_format($totalValue, 0),
+                'format' => 'currency',
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Pending',
+                'value' => $pendingContracts,
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('agribusiness.contracts.index', compact('contracts', 'kpis'));
     }
 
     public function create(): View|RedirectResponse

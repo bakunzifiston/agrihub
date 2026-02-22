@@ -13,9 +13,37 @@ class DistributionController extends Controller
 {
     public function index(): View
     {
-        $distributions = auth()->user()->distributions()->with('inventory.warehouse', 'customer')->latest()->get();
+        $user = auth()->user();
+        $distributions = $user->distributions()->with('inventory.warehouse', 'customer')->latest()->get();
 
-        return view('agribusiness.distributions.index', compact('distributions'));
+        $totalDispatched = $distributions->sum('quantity_dispatched');
+        $pendingDistributions = $distributions->where('delivery_status', 'pending')->count();
+        $deliveredDistributions = $distributions->where('delivery_status', 'delivered')->count();
+
+        $kpis = [
+            [
+                'label' => 'Distributions',
+                'value' => $distributions->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Dispatched',
+                'value' => number_format($totalDispatched, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Pending',
+                'value' => $pendingDistributions,
+                'color' => 'border-yellow-500',
+            ],
+            [
+                'label' => 'Delivered',
+                'value' => $deliveredDistributions,
+                'color' => 'border-purple-500',
+            ],
+        ];
+
+        return view('agribusiness.distributions.index', compact('distributions', 'kpis'));
     }
 
     public function create(): View

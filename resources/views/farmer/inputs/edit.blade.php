@@ -10,7 +10,7 @@
         <form method="POST" action="{{ route('farmer.inputs.update', $farmInput) }}">
             @csrf
             @method('PATCH')
-            @include('farmer.inputs._form', ['input' => $farmInput])
+            @include('farmer.inputs._form', ['input' => $farmInput, 'farmProfiles' => $farmProfiles])
             <div class="mt-6 flex gap-4">
                 <x-primary-button>Update Input</x-primary-button>
                 <a href="{{ route('farmer.inputs.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</a>

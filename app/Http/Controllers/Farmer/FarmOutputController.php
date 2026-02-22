@@ -12,9 +12,36 @@ class FarmOutputController extends Controller
 {
     public function index(): View
     {
-        $outputs = auth()->user()->farmOutputs()->latest()->get();
+        $user = auth()->user();
+        $outputs = $user->farmOutputs()->latest()->get();
 
-        return view('farmer.outputs.index', compact('outputs'));
+        $totalQuantity = $outputs->sum('quantity_available');
+        $expiringCount = $outputs->filter(fn ($o) => $o->expiry_date && $o->expiry_date->lte(now()->addDays(30)))->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Products',
+                'value' => $outputs->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'In Storage',
+                'value' => $outputs->whereNotNull('storage_location')->count(),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Total Quantity',
+                'value' => number_format($totalQuantity, 0),
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Expiring Soon',
+                'value' => $expiringCount,
+                'color' => $expiringCount > 0 ? 'border-red-500' : 'border-gray-400',
+            ],
+        ];
+
+        return view('farmer.outputs.index', compact('outputs', 'kpis'));
     }
 
     public function create(): View

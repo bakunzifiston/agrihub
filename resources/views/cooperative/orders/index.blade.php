@@ -5,6 +5,8 @@
             <a href="{{ route('cooperative.orders.create') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-700 font-medium text-sm">Add Order</a>
         </div>
     </x-slot>
+    <x-module-kpis :kpis="$kpis ?? []" />
+
     @if (session('success'))
         <div class="mb-4 p-4 bg-primary-100 text-primary rounded-lg">{{ session('success') }}</div>
     @endif

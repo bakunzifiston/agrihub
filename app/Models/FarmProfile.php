@@ -11,12 +11,14 @@ class FarmProfile extends Model
     protected $fillable = [
         'farmer_id',
         'tenant_id',
-        'full_name',
+        'first_name',
+        'last_name',
         'national_id',
         'phone_number',
         'email',
         'gender',
         'date_of_birth',
+        'photo',
         'farm_name',
         'farm_type',
         'total_land_size',
@@ -32,6 +34,7 @@ class FarmProfile extends Model
         'registration_date',
         'status',
         'inputs_availability',
+        'custom_inputs',
     ];
 
     protected function casts(): array
@@ -43,7 +46,13 @@ class FarmProfile extends Model
             'gps_latitude' => 'decimal:7',
             'gps_longitude' => 'decimal:7',
             'inputs_availability' => 'array',
+            'custom_inputs' => 'array',
         ];
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
     }
 
     public function farmer(): BelongsTo

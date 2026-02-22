@@ -47,4 +47,20 @@ class Crop extends Model
     {
         return $this->hasMany(FarmInputApplication::class);
     }
+
+    public static function getCropTypeLabel(?string $type): string
+    {
+        if (! $type) {
+            return 'Unknown';
+        }
+
+        $cropTypes = config('crop-types');
+
+        return $cropTypes[$type]['label'] ?? ucfirst(str_replace('_', ' ', $type));
+    }
+
+    public function getCropTypeLabelAttribute(): string
+    {
+        return self::getCropTypeLabel($this->crop_type);
+    }
 }

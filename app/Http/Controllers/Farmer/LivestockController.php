@@ -12,9 +12,34 @@ class LivestockController extends Controller
 {
     public function index(): View
     {
-        $livestock = auth()->user()->livestock()->latest()->get();
+        $user = auth()->user();
+        $livestock = $user->livestock()->latest()->get();
 
-        return view('farmer.livestock.index', compact('livestock'));
+        $totalAnimals = $livestock->sum('quantity');
+        $kpis = [
+            [
+                'label' => 'Livestock Types',
+                'value' => $livestock->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Animals',
+                'value' => number_format($totalAnimals),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'For Milk',
+                'value' => $livestock->where('purpose', 'milk')->sum('quantity'),
+                'color' => 'border-cyan-500',
+            ],
+            [
+                'label' => 'For Meat',
+                'value' => $livestock->where('purpose', 'meat')->sum('quantity'),
+                'color' => 'border-red-500',
+            ],
+        ];
+
+        return view('farmer.livestock.index', compact('livestock', 'kpis'));
     }
 
     public function create(): View

@@ -12,9 +12,37 @@ class SupplierController extends Controller
 {
     public function index(): View
     {
-        $suppliers = auth()->user()->suppliers()->latest()->get();
+        $user = auth()->user();
+        $suppliers = $user->suppliers()->latest()->get();
 
-        return view('agribusiness.suppliers.index', compact('suppliers'));
+        $activeSuppliers = $suppliers->where('status', 'active')->count();
+        $farmersCount = $suppliers->where('supplier_type', 'farmer')->count();
+        $cooperativeCount = $suppliers->where('supplier_type', 'cooperative')->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Suppliers',
+                'value' => $suppliers->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Active',
+                'value' => $activeSuppliers,
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Farmers',
+                'value' => $farmersCount,
+                'color' => 'border-yellow-500',
+            ],
+            [
+                'label' => 'Cooperatives',
+                'value' => $cooperativeCount,
+                'color' => 'border-purple-500',
+            ],
+        ];
+
+        return view('agribusiness.suppliers.index', compact('suppliers', 'kpis'));
     }
 
     public function create(): View

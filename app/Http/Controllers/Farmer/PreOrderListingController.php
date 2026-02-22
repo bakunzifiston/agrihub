@@ -14,8 +14,38 @@ class PreOrderListingController extends Controller
 {
     public function index(): View
     {
-        $listings = auth()->user()->preOrderListings()->with(['crop', 'farmOutput', 'preOrders'])->orderBy('expected_harvest_date')->get();
-        return view('farmer.pre-order-listings.index', compact('listings'));
+        $user = auth()->user();
+        $listings = $user->preOrderListings()->with(['crop', 'farmOutput', 'preOrders'])->orderBy('expected_harvest_date')->get();
+
+        $totalValue = $listings->sum(fn ($l) => $l->quantity_available * ($l->price_per_unit ?? 0));
+        $activeListings = $listings->where('listing_status', 'active')->count();
+        $totalOrders = $listings->sum(fn ($l) => $l->preOrders->count());
+
+        $kpis = [
+            [
+                'label' => 'Total Listings',
+                'value' => $listings->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Active',
+                'value' => $activeListings,
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Pre-Orders',
+                'value' => $totalOrders,
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Est. Value',
+                'value' => number_format($totalValue, 0),
+                'format' => 'currency',
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('farmer.pre-order-listings.index', compact('listings', 'kpis'));
     }
 
     public function create(): View

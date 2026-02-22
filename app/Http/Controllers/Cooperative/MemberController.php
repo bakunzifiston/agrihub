@@ -13,9 +13,36 @@ class MemberController extends Controller
 {
     public function index(): View
     {
-        $members = auth()->user()->cooperativeMembers()->with('farmer')->latest()->get();
+        $user = auth()->user();
+        $members = $user->cooperativeMembers()->with('farmer')->latest()->get();
 
-        return view('cooperative.members.index', compact('members'));
+        $activeMembers = $members->where('status', 'active')->count();
+        $pendingMembers = $members->where('status', 'pending')->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Members',
+                'value' => $members->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Active',
+                'value' => $activeMembers,
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Pending',
+                'value' => $pendingMembers,
+                'color' => 'border-yellow-500',
+            ],
+            [
+                'label' => 'Inactive',
+                'value' => $members->where('status', 'inactive')->count(),
+                'color' => 'border-gray-400',
+            ],
+        ];
+
+        return view('cooperative.members.index', compact('members', 'kpis'));
     }
 
     public function create(): View

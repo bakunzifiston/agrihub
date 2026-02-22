@@ -13,9 +13,39 @@ class CollectionController extends Controller
 {
     public function index(): View
     {
-        $collections = auth()->user()->produceCollections()->with(['member', 'farmer'])->latest()->get();
+        $user = auth()->user();
+        $collections = $user->produceCollections()->with(['member', 'farmer'])->latest()->get();
 
-        return view('cooperative.collections.index', compact('collections'));
+        $totalValue = $collections->sum('total_value');
+        $totalQuantity = $collections->sum('quantity_collected');
+        $thisMonthValue = $collections->filter(fn ($c) => $c->collection_date && $c->collection_date->isCurrentMonth())->sum('total_value');
+
+        $kpis = [
+            [
+                'label' => 'Collections',
+                'value' => $collections->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Quantity',
+                'value' => number_format($totalQuantity, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Total Value',
+                'value' => number_format($totalValue, 0),
+                'format' => 'currency',
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'This Month',
+                'value' => number_format($thisMonthValue, 0),
+                'format' => 'currency',
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('cooperative.collections.index', compact('collections', 'kpis'));
     }
 
     public function create(): View

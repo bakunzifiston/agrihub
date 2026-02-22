@@ -11,6 +11,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         @include('layouts.partials.vite-assets')
+        @include('layouts.partials.tracenova-tracking')
     </head>
     <body class="font-sans antialiased bg-gray-100">
         @php

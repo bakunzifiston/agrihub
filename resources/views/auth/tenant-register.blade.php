@@ -20,10 +20,17 @@
     <form method="POST" action="{{ route($tenantType . '.register.post') }}">
         @csrf
 
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <x-input-label for="first_name" :value="__('First Name')" />
+                <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name')" required autofocus autocomplete="given-name" />
+                <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
+            </div>
+            <div>
+                <x-input-label for="last_name" :value="__('Last Name')" />
+                <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name')" required autocomplete="family-name" />
+                <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
+            </div>
         </div>
 
         <div class="mt-4">
@@ -91,21 +98,46 @@
             </div>
         @endif
 
-        {{-- Common: location, country, district (all tenant types) --}}
+        {{-- Common: cascading location selects (all tenant types) --}}
         <div class="mt-4">
-            <x-input-label for="location" value="Location / Address" />
-            <x-text-input id="location" class="block mt-1 w-full" type="text" name="location" :value="old('location')" placeholder="e.g. Village, Sector" />
-            <x-input-error :messages="$errors->get('location')" class="mt-2" />
-        </div>
-        <div class="mt-4">
-            <x-input-label for="country" value="Country" />
-            <x-text-input id="country" class="block mt-1 w-full" type="text" name="country" :value="old('country')" placeholder="e.g. Rwanda" />
+            <x-input-label for="country" value="Country *" />
+            <select id="country" name="country" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
+                <option value="">Select country</option>
+            </select>
             <x-input-error :messages="$errors->get('country')" class="mt-2" />
         </div>
         <div class="mt-4">
-            <x-input-label for="district" value="District" />
-            <x-text-input id="district" class="block mt-1 w-full" type="text" name="district" :value="old('district')" />
+            <x-input-label for="district" value="District *" />
+            <select id="district" name="district" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required disabled>
+                <option value="">Select district</option>
+            </select>
             <x-input-error :messages="$errors->get('district')" class="mt-2" />
+        </div>
+        <div class="mt-4">
+            <x-input-label for="sector" value="Sector" />
+            <select id="sector" name="sector" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" disabled>
+                <option value="">Select sector</option>
+            </select>
+            <x-input-error :messages="$errors->get('sector')" class="mt-2" />
+        </div>
+        <div class="mt-4">
+            <x-input-label for="cell" value="Cell" />
+            <select id="cell" name="cell" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" disabled>
+                <option value="">Select cell</option>
+            </select>
+            <x-input-error :messages="$errors->get('cell')" class="mt-2" />
+        </div>
+        <div class="mt-4">
+            <x-input-label for="village" value="Village" />
+            <select id="village" name="village" class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" disabled>
+                <option value="">Select village</option>
+            </select>
+            <x-input-error :messages="$errors->get('village')" class="mt-2" />
+        </div>
+        <div class="mt-4">
+            <x-input-label for="location" value="Address / Location details" />
+            <x-text-input id="location" class="block mt-1 w-full" type="text" name="location" :value="old('location')" placeholder="e.g. Street, landmark" />
+            <x-input-error :messages="$errors->get('location')" class="mt-2" />
         </div>
 
         <div class="mt-4">
@@ -129,4 +161,121 @@
             </x-primary-button>
         </div>
     </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const countrySelect = document.getElementById('country');
+        const districtSelect = document.getElementById('district');
+        const sectorSelect = document.getElementById('sector');
+        const cellSelect = document.getElementById('cell');
+        const villageSelect = document.getElementById('village');
+
+        const apiBase = '{{ url('/api/locations') }}';
+
+        function resetSelect(select, placeholder, disable = true) {
+            select.innerHTML = '<option value="">' + placeholder + '</option>';
+            select.disabled = disable;
+        }
+
+        function populateSelect(select, data, placeholder, disabled = false) {
+            select.innerHTML = '<option value="">' + placeholder + '</option>';
+            data.forEach(function(item) {
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.name;
+                opt.dataset.id = item.id;
+                select.appendChild(opt);
+            });
+            select.disabled = disabled || data.length === 0;
+        }
+
+        function getSelectedId(select) {
+            const selectedOpt = select.options[select.selectedIndex];
+            return selectedOpt ? selectedOpt.dataset.id : null;
+        }
+
+        fetch(apiBase + '/countries')
+            .then(r => r.json())
+            .then(data => {
+                populateSelect(countrySelect, data, 'Select country', false);
+                @if(old('country'))
+                countrySelect.value = '{{ old('country') }}';
+                if (countrySelect.value) countrySelect.dispatchEvent(new Event('change'));
+                @endif
+            });
+
+        countrySelect.addEventListener('change', function() {
+            resetSelect(districtSelect, 'Select district');
+            resetSelect(sectorSelect, 'Select sector');
+            resetSelect(cellSelect, 'Select cell');
+            resetSelect(villageSelect, 'Select village');
+
+            const id = getSelectedId(this);
+            if (!id) return;
+
+            fetch(apiBase + '/districts?country_id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    populateSelect(districtSelect, data, 'Select district', false);
+                    @if(old('district'))
+                    districtSelect.value = '{{ old('district') }}';
+                    if (districtSelect.value) districtSelect.dispatchEvent(new Event('change'));
+                    @endif
+                });
+        });
+
+        districtSelect.addEventListener('change', function() {
+            resetSelect(sectorSelect, 'Select sector');
+            resetSelect(cellSelect, 'Select cell');
+            resetSelect(villageSelect, 'Select village');
+
+            const id = getSelectedId(this);
+            if (!id) return;
+
+            fetch(apiBase + '/sectors?district_id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    populateSelect(sectorSelect, data, 'Select sector', false);
+                    @if(old('sector'))
+                    sectorSelect.value = '{{ old('sector') }}';
+                    if (sectorSelect.value) sectorSelect.dispatchEvent(new Event('change'));
+                    @endif
+                });
+        });
+
+        sectorSelect.addEventListener('change', function() {
+            resetSelect(cellSelect, 'Select cell');
+            resetSelect(villageSelect, 'Select village');
+
+            const id = getSelectedId(this);
+            if (!id) return;
+
+            fetch(apiBase + '/cells?sector_id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    populateSelect(cellSelect, data, 'Select cell', false);
+                    @if(old('cell'))
+                    cellSelect.value = '{{ old('cell') }}';
+                    if (cellSelect.value) cellSelect.dispatchEvent(new Event('change'));
+                    @endif
+                });
+        });
+
+        cellSelect.addEventListener('change', function() {
+            resetSelect(villageSelect, 'Select village');
+
+            const id = getSelectedId(this);
+            if (!id) return;
+
+            fetch(apiBase + '/villages?cell_id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    populateSelect(villageSelect, data, 'Select village', false);
+                    @if(old('village'))
+                    villageSelect.value = '{{ old('village') }}';
+                    @endif
+                });
+        });
+    });
+    </script>
 </x-guest-layout>

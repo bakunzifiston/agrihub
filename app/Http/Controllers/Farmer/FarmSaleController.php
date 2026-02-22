@@ -14,9 +14,42 @@ class FarmSaleController extends Controller
 {
     public function index(): View
     {
-        $sales = auth()->user()->farmSales()->with(['output', 'client'])->latest()->get();
+        $user = auth()->user();
+        $sales = $user->farmSales()->with(['output', 'client'])->latest()->get();
 
-        return view('farmer.sales.index', compact('sales'));
+        $totalRevenue = $sales->sum('total_amount');
+        $thisMonthSales = $sales->filter(fn ($s) => $s->sale_date->isCurrentMonth());
+        $thisMonthRevenue = $thisMonthSales->sum('total_amount');
+        $paidSales = $sales->where('payment_status', 'paid')->sum('total_amount');
+        $pendingSales = $sales->whereIn('payment_status', ['pending', 'partial', 'overdue'])->sum('total_amount');
+
+        $kpis = [
+            [
+                'label' => 'Total Sales',
+                'value' => $sales->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Revenue',
+                'value' => number_format($totalRevenue, 0),
+                'format' => 'currency',
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'This Month',
+                'value' => number_format($thisMonthRevenue, 0),
+                'format' => 'currency',
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Pending Payments',
+                'value' => number_format($pendingSales, 0),
+                'format' => 'currency',
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('farmer.sales.index', compact('sales', 'kpis'));
     }
 
     public function create(): View

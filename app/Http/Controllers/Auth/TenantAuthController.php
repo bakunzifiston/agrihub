@@ -56,12 +56,16 @@ class TenantAuthController extends Controller
         $this->validateTenantType($tenantType);
 
         $rules = [
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'location' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'district' => ['nullable', 'string', 'max:100'],
+            'country' => ['required', 'string', 'max:100'],
+            'district' => ['required', 'string', 'max:100'],
+            'sector' => ['nullable', 'string', 'max:100'],
+            'cell' => ['nullable', 'string', 'max:100'],
+            'village' => ['nullable', 'string', 'max:100'],
         ];
 
         if ($tenantType === 'farmer') {
@@ -80,8 +84,11 @@ class TenantAuthController extends Controller
         $validated = $request->validate($rules);
 
         $user = DB::transaction(function () use ($request, $tenantType, $validated) {
+            $fullName = trim($validated['first_name'] . ' ' . $validated['last_name']);
+
             $user = User::create([
-                'name' => $request->name,
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'tenant_type' => $tenantType,
@@ -89,6 +96,9 @@ class TenantAuthController extends Controller
                 'location' => $validated['location'] ?? null,
                 'country' => $validated['country'] ?? null,
                 'district' => $validated['district'] ?? null,
+                'sector' => $validated['sector'] ?? null,
+                'cell' => $validated['cell'] ?? null,
+                'village' => $validated['village'] ?? null,
                 'farm_name' => $validated['farm_name'] ?? null,
                 'farm_type' => $validated['farm_type'] ?? null,
                 'cooperative_name' => $validated['cooperative_name'] ?? null,
@@ -98,10 +108,10 @@ class TenantAuthController extends Controller
             ]);
 
             $orgName = match ($tenantType) {
-                'farmer' => $validated['farm_name'] ?? $request->name,
-                'cooperative' => $validated['cooperative_name'] ?? $request->name,
-                'agribusiness' => $validated['business_name'] ?? $request->name,
-                default => $request->name . "'s " . ucfirst($tenantType),
+                'farmer' => $validated['farm_name'] ?? $fullName,
+                'cooperative' => $validated['cooperative_name'] ?? $fullName,
+                'agribusiness' => $validated['business_name'] ?? $fullName,
+                default => $fullName . "'s " . ucfirst($tenantType),
             };
             $org = TenantOrganization::create([
                 'owner_id' => $user->id,

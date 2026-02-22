@@ -12,9 +12,38 @@ class ProductionRecordController extends Controller
 {
     public function index(): View
     {
-        $records = auth()->user()->productionRecords()->latest()->get();
+        $user = auth()->user();
+        $records = $user->productionRecords()->latest()->get();
 
-        return view('farmer.production-records.index', compact('records'));
+        $totalProduced = $records->sum('quantity_produced');
+        $totalLosses = $records->sum('losses_quantity');
+        $cropRecords = $records->where('product_type', 'crop')->count();
+        $livestockRecords = $records->where('product_type', 'livestock')->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Records',
+                'value' => $records->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Produced',
+                'value' => number_format($totalProduced, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Total Losses',
+                'value' => number_format($totalLosses, 0),
+                'color' => $totalLosses > 0 ? 'border-red-500' : 'border-gray-400',
+            ],
+            [
+                'label' => 'Crop Records',
+                'value' => $cropRecords,
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('farmer.production-records.index', compact('records', 'kpis'));
     }
 
     public function create(): View

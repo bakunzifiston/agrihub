@@ -13,9 +13,39 @@ class ProcessingController extends Controller
 {
     public function index(): View
     {
-        $records = auth()->user()->processingRecords()->with(['contract.supplier', 'rawMaterials.supplier'])->latest()->get();
+        $user = auth()->user();
+        $records = $user->processingRecords()->with(['contract.supplier', 'rawMaterials.supplier'])->latest()->get();
 
-        return view('agribusiness.processing.index', compact('records'));
+        $totalCost = $records->sum('processing_cost');
+        $totalOutput = $records->sum('output_quantity');
+        $thisMonthCost = $records->filter(fn ($r) => $r->processing_date && $r->processing_date->isCurrentMonth())->sum('processing_cost');
+
+        $kpis = [
+            [
+                'label' => 'Processing Records',
+                'value' => $records->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Output',
+                'value' => number_format($totalOutput, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Total Cost',
+                'value' => number_format($totalCost, 0),
+                'format' => 'currency',
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'This Month Cost',
+                'value' => number_format($thisMonthCost, 0),
+                'format' => 'currency',
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('agribusiness.processing.index', compact('records', 'kpis'));
     }
 
     public function create(): View

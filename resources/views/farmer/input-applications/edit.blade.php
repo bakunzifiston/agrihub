@@ -12,7 +12,7 @@
                 <form method="POST" action="{{ route('farmer.input-applications.update', $farmInputApplication) }}">
                     @csrf
                     @method('PATCH')
-                    @include('farmer.input-applications._form', ['application' => $farmInputApplication, 'farmProfiles' => $farmProfiles, 'crops' => $crops, 'inputNameOptions' => $inputNameOptions, 'supplierNameOptions' => $supplierNameOptions])
+                    @include('farmer.input-applications._form', ['application' => $farmInputApplication, 'farmProfiles' => $farmProfiles, 'crops' => $crops, 'stockInputs' => $stockInputs, 'supplierNameOptions' => $supplierNameOptions])
                     <div class="mt-6 flex gap-4">
                         <x-primary-button>Update</x-primary-button>
                         <a href="{{ route('farmer.input-applications.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</a>

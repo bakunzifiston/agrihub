@@ -1,4 +1,8 @@
-@props(['application' => null, 'farmProfiles' => collect(), 'crops' => collect(), 'inputNameOptions' => collect(), 'supplierNameOptions' => collect()])
+@props(['application' => null, 'farmProfiles' => collect(), 'crops' => collect(), 'stockInputs' => collect(), 'supplierNameOptions' => collect()])
+
+@php
+    $inputCategories = config('agricultural-inputs');
+@endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
@@ -37,30 +41,42 @@
         </select>
         <x-input-error class="mt-2" :messages="$errors->get('crop_id')" />
     </div>
-    @if ($inputNameOptions->isNotEmpty())
+
     <div class="md:col-span-2">
-            <x-input-label for="input_name_select" value="Select from your inputs (optional)" />
-            <select id="input_name_select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
-                <option value="">— Select or type below —</option>
-                @foreach ($inputNameOptions as $name)
-                    <option value="{{ e($name) }}">{{ $name }}</option>
-                @endforeach
-            </select>
-        </div>
-    @endif
-    <div>
-        <x-input-label for="input_name" value="Input name *" />
-        <x-text-input id="input_name" name="input_name" type="text" class="mt-1 block w-full" :value="old('input_name', $application?->input_name)" required placeholder="e.g. Urea, Roundup" />
-        <x-input-error class="mt-2" :messages="$errors->get('input_name')" />
+        <x-input-label for="stock_input_select" value="Select from inputs in stock" />
+        <select id="stock_input_select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary">
+            <option value="">— Select an input from stock, or type manually below —</option>
+            @php
+                $groupedInputs = $stockInputs->groupBy('input_category');
+            @endphp
+            @foreach ($groupedInputs as $category => $inputs)
+                <optgroup label="{{ \App\Models\FarmInput::getInputCategoryLabel($category) }}">
+                    @foreach ($inputs as $input)
+                        <option value="{{ $input->id }}" data-category="{{ $input->input_category }}" data-name="{{ $input->input_name }}" data-unit="{{ $input->unit }}" data-supplier="{{ $input->supplier_name }}" data-qty="{{ $input->quantity }}">
+                            {{ $input->input_name }} ({{ number_format($input->quantity, 2) }} {{ $input->unit }} in stock)
+                        </option>
+                    @endforeach
+                </optgroup>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs text-gray-500">Select an input from your inventory stock to auto-fill details</p>
     </div>
+
     <div>
-        <x-input-label for="input_type" value="Input type *" />
+        <x-input-label for="input_type" value="Input type/category *" />
         <select id="input_type" name="input_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary" required>
-            <option value="fertilizer" @selected(old('input_type', $application?->input_type) === 'fertilizer')>Fertilizer</option>
-            <option value="pesticide" @selected(old('input_type', $application?->input_type) === 'pesticide')>Pesticide</option>
-            <option value="herbicide" @selected(old('input_type', $application?->input_type) === 'herbicide')>Herbicide</option>
+            <option value="">— Select type —</option>
+            @foreach ($inputCategories as $catKey => $cat)
+                <option value="{{ $catKey }}" @selected(old('input_type', $application?->input_type) === $catKey)>{{ $cat['label'] }}</option>
+            @endforeach
         </select>
         <x-input-error class="mt-2" :messages="$errors->get('input_type')" />
+    </div>
+
+    <div>
+        <x-input-label for="input_name" value="Input name *" />
+        <x-text-input id="input_name" name="input_name" type="text" class="mt-1 block w-full" :value="old('input_name', $application?->input_name)" required placeholder="e.g. Urea 46%, DAP 18-46-0" />
+        <x-input-error class="mt-2" :messages="$errors->get('input_name')" />
     </div>
     <div>
         <x-input-label for="batch_number" value="Batch number" />
@@ -121,18 +137,48 @@
     </div>
 </div>
 
-@if ($inputNameOptions->isNotEmpty() || $supplierNameOptions->isNotEmpty())
+@push('scripts')
 <script>
 (function() {
-    var inputNameSelect = document.getElementById('input_name_select');
-    var inputName = document.getElementById('input_name');
-    if (inputNameSelect && inputName) {
-        inputNameSelect.addEventListener('change', function() {
-            if (this.value) inputName.value = this.value;
+    var stockInputSelect = document.getElementById('stock_input_select');
+    var inputTypeSelect = document.getElementById('input_type');
+    var inputNameField = document.getElementById('input_name');
+    var unitSelect = document.getElementById('unit');
+    var supplierInput = document.getElementById('supplier');
+    var supplierSelect = document.getElementById('supplier_select');
+
+    if (stockInputSelect) {
+        stockInputSelect.addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                var category = selectedOption.getAttribute('data-category');
+                var name = selectedOption.getAttribute('data-name');
+                var unit = selectedOption.getAttribute('data-unit');
+                var supplier = selectedOption.getAttribute('data-supplier');
+
+                if (category && inputTypeSelect) {
+                    inputTypeSelect.value = category;
+                }
+                if (name && inputNameField) {
+                    inputNameField.value = name;
+                }
+                if (unit && unitSelect) {
+                    var unitLower = unit.toLowerCase();
+                    var unitOptions = Array.from(unitSelect.options);
+                    for (var i = 0; i < unitOptions.length; i++) {
+                        if (unitOptions[i].value.toLowerCase() === unitLower || unitOptions[i].value === unit) {
+                            unitSelect.value = unitOptions[i].value;
+                            break;
+                        }
+                    }
+                }
+                if (supplier && supplierInput) {
+                    supplierInput.value = supplier;
+                }
+            }
         });
     }
-    var supplierSelect = document.getElementById('supplier_select');
-    var supplierInput = document.getElementById('supplier');
+
     if (supplierSelect && supplierInput) {
         supplierSelect.addEventListener('change', function() {
             if (this.value) supplierInput.value = this.value;
@@ -140,4 +186,4 @@
     }
 })();
 </script>
-@endif
+@endpush

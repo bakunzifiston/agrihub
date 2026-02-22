@@ -37,7 +37,7 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $app->application_date->format('M d, Y') }}</td>
                                     <td class="px-4 py-3 text-sm">
                                         <span class="font-medium text-gray-900">{{ $app->input_name }}</span>
-                                        <span class="text-gray-500">({{ ucfirst($app->input_type) }})</span>
+                                        <span class="text-gray-500">({{ \App\Models\FarmInputApplication::getInputTypeLabel($app->input_type) }})</span>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $app->farmProfile?->farm_name ?? '-' }} / {{ $app->plot?->name ?? '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $app->crop?->crop_name ?? '-' }}</td>

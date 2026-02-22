@@ -35,9 +35,16 @@ class FarmInputApplication extends Model
         ];
     }
 
-    public const TYPE_FERTILIZER = 'fertilizer';
-    public const TYPE_PESTICIDE = 'pesticide';
-    public const TYPE_HERBICIDE = 'herbicide';
+    public static function getInputTypeLabel(?string $type): string
+    {
+        if (! $type) {
+            return 'Unknown';
+        }
+
+        $categories = config('agricultural-inputs');
+
+        return $categories[$type]['label'] ?? ucfirst(str_replace('_', ' ', $type));
+    }
 
     public function farmer(): BelongsTo
     {

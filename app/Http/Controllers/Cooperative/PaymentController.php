@@ -13,9 +13,40 @@ class PaymentController extends Controller
 {
     public function index(): View
     {
-        $payments = auth()->user()->cooperativePayments()->with('farmer')->latest()->get();
+        $user = auth()->user();
+        $payments = $user->cooperativePayments()->with('farmer')->latest()->get();
 
-        return view('cooperative.payments.index', compact('payments'));
+        $totalPaid = $payments->sum('amount_paid');
+        $thisMonthPaid = $payments->filter(fn ($p) => $p->payment_date && $p->payment_date->isCurrentMonth())->sum('amount_paid');
+        $pendingPayments = $payments->where('payment_status', 'pending')->sum('amount_paid');
+
+        $kpis = [
+            [
+                'label' => 'Total Payments',
+                'value' => $payments->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Paid',
+                'value' => number_format($totalPaid, 0),
+                'format' => 'currency',
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'This Month',
+                'value' => number_format($thisMonthPaid, 0),
+                'format' => 'currency',
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Pending',
+                'value' => number_format($pendingPayments, 0),
+                'format' => 'currency',
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('cooperative.payments.index', compact('payments', 'kpis'));
     }
 
     public function create(): View

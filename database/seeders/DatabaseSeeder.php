@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
-                'name' => 'Super Admin',
+                'first_name' => 'Super',
+                'last_name' => 'Admin',
                 'password' => Hash::make('password'),
                 'tenant_type' => User::TENANT_SUPER_ADMIN,
                 'is_approved' => true,
@@ -29,5 +30,8 @@ class DatabaseSeeder extends Seeder
 
         // Seed default feature settings per tenant type
         $this->call(FeatureSettingSeeder::class);
+
+        // Seed Rwanda administrative locations
+        $this->call(RwandaLocationsSeeder::class);
     }
 }

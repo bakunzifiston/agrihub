@@ -26,10 +26,10 @@ class FarmInputApplicationController extends Controller
     {
         $farmProfiles = auth()->user()->farmProfiles()->with('plots')->orderBy('farm_name')->get();
         $crops = auth()->user()->crops()->orderBy('crop_name')->get();
-        $inputNameOptions = auth()->user()->farmInputs()->distinct()->pluck('input_name')->filter()->sort()->values();
+        $stockInputs = auth()->user()->farmInputs()->where('quantity', '>', 0)->orderBy('input_category')->orderBy('input_name')->get();
         $supplierNameOptions = auth()->user()->farmInputs()->distinct()->pluck('supplier_name')->filter()->sort()->values();
 
-        return view('farmer.input-applications.create', compact('farmProfiles', 'crops', 'inputNameOptions', 'supplierNameOptions'));
+        return view('farmer.input-applications.create', compact('farmProfiles', 'crops', 'stockInputs', 'supplierNameOptions'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -48,7 +48,7 @@ class FarmInputApplicationController extends Controller
                 Rule::exists('crops', 'id')->where('farmer_id', auth()->id()),
             ],
             'input_name' => ['required', 'string', 'max:255'],
-            'input_type' => ['required', 'string', 'in:fertilizer,pesticide,herbicide'],
+            'input_type' => ['required', 'string', 'in:' . implode(',', array_keys(config('agricultural-inputs')))],
             'batch_number' => ['nullable', 'string', 'max:100'],
             'supplier' => ['nullable', 'string', 'max:255'],
             'application_date' => ['required', 'date'],
@@ -74,10 +74,10 @@ class FarmInputApplicationController extends Controller
 
         $farmProfiles = auth()->user()->farmProfiles()->with('plots')->orderBy('farm_name')->get();
         $crops = auth()->user()->crops()->orderBy('crop_name')->get();
-        $inputNameOptions = auth()->user()->farmInputs()->distinct()->pluck('input_name')->filter()->sort()->values();
+        $stockInputs = auth()->user()->farmInputs()->where('quantity', '>', 0)->orderBy('input_category')->orderBy('input_name')->get();
         $supplierNameOptions = auth()->user()->farmInputs()->distinct()->pluck('supplier_name')->filter()->sort()->values();
 
-        return view('farmer.input-applications.edit', compact('farmInputApplication', 'farmProfiles', 'crops', 'inputNameOptions', 'supplierNameOptions'));
+        return view('farmer.input-applications.edit', compact('farmInputApplication', 'farmProfiles', 'crops', 'stockInputs', 'supplierNameOptions'));
     }
 
     public function update(Request $request, FarmInputApplication $farmInputApplication): RedirectResponse
@@ -100,7 +100,7 @@ class FarmInputApplicationController extends Controller
                 Rule::exists('crops', 'id')->where('farmer_id', auth()->id()),
             ],
             'input_name' => ['required', 'string', 'max:255'],
-            'input_type' => ['required', 'string', 'in:fertilizer,pesticide,herbicide'],
+            'input_type' => ['required', 'string', 'in:' . implode(',', array_keys(config('agricultural-inputs')))],
             'batch_number' => ['nullable', 'string', 'max:100'],
             'supplier' => ['nullable', 'string', 'max:255'],
             'application_date' => ['required', 'date'],
