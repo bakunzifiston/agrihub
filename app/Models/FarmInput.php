@@ -33,4 +33,18 @@ class FarmInput extends Model
     {
         return $this->belongsTo(User::class, 'farmer_id');
     }
+
+    public static function getInputCategoryLabel(?string $category): string
+    {
+        if (!$category) {
+            return '-';
+        }
+        $categories = config('agricultural-inputs');
+        return $categories[$category]['label'] ?? ucfirst(str_replace('_', ' ', $category));
+    }
+
+    public function getInputCategoryLabelAttribute(): string
+    {
+        return static::getInputCategoryLabel($this->input_category);
+    }
 }

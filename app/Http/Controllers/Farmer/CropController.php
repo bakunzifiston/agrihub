@@ -14,21 +14,44 @@ class CropController extends Controller
 {
     public function index(): View
     {
-        $crops = auth()->user()->crops()->with('plots')->latest()->get();
+        $user = auth()->user();
+        $crops = $user->crops()->with('plots')->latest()->get();
 
-        return view('farmer.crops.index', compact('crops'));
+        $kpis = [
+            [
+                'label' => 'Total Crops',
+                'value' => $crops->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Planted',
+                'value' => $crops->where('crop_status', 'planted')->count(),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Growing',
+                'value' => $crops->where('crop_status', 'growing')->count(),
+                'color' => 'border-yellow-500',
+            ],
+            [
+                'label' => 'Harvested',
+                'value' => $crops->where('crop_status', 'harvested')->count(),
+                'color' => 'border-primary',
+            ],
+        ];
+
+        return view('farmer.crops.index', compact('crops', 'kpis'));
     }
 
     public function create(): View
     {
-        $registeredCrops = auth()->user()->registeredCrops()->orderBy('crop_name')->orderBy('crop_type')->get();
         $plots = FarmProfilePlot::whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id'))
             ->with('farmProfile')
             ->orderBy('farm_profile_id')
             ->orderBy('sort_order')
             ->get();
 
-        return view('farmer.crops.create', compact('registeredCrops', 'plots'));
+        return view('farmer.crops.create', compact('plots'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -38,8 +61,8 @@ class CropController extends Controller
             'plot_ids.*' => [
                 Rule::exists('farm_profile_plots', 'id')->whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id')),
             ],
+            'crop_type' => ['required', 'string', 'max:100'],
             'crop_name' => ['required', 'string', 'max:255'],
-            'crop_type' => ['nullable', 'string', 'max:100'],
             'season' => ['nullable', 'string', 'max:50'],
             'planting_date' => ['nullable', 'date'],
             'expected_harvest_date' => ['nullable', 'date'],
@@ -66,14 +89,13 @@ class CropController extends Controller
             abort(403);
         }
 
-        $registeredCrops = auth()->user()->registeredCrops()->orderBy('crop_name')->orderBy('crop_type')->get();
         $plots = FarmProfilePlot::whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id'))
             ->with('farmProfile')
             ->orderBy('farm_profile_id')
             ->orderBy('sort_order')
             ->get();
 
-        return view('farmer.crops.edit', compact('crop', 'registeredCrops', 'plots'));
+        return view('farmer.crops.edit', compact('crop', 'plots'));
     }
 
     public function update(Request $request, Crop $crop): RedirectResponse
@@ -87,8 +109,8 @@ class CropController extends Controller
             'plot_ids.*' => [
                 Rule::exists('farm_profile_plots', 'id')->whereIn('farm_profile_id', auth()->user()->farmProfiles()->pluck('id')),
             ],
+            'crop_type' => ['required', 'string', 'max:100'],
             'crop_name' => ['required', 'string', 'max:255'],
-            'crop_type' => ['nullable', 'string', 'max:100'],
             'season' => ['nullable', 'string', 'max:50'],
             'planting_date' => ['nullable', 'date'],
             'expected_harvest_date' => ['nullable', 'date'],

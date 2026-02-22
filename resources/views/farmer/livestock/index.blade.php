@@ -8,6 +8,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-module-kpis :kpis="$kpis ?? []" />
+
             @if (session('success'))
                 <div class="mb-4 p-4 bg-emerald-100 text-emerald-800 rounded-lg">{{ session('success') }}</div>
             @endif

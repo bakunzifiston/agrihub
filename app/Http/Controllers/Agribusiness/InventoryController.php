@@ -12,9 +12,38 @@ class InventoryController extends Controller
 {
     public function index(): View
     {
-        $inventory = auth()->user()->agribusinessInventory()->with('warehouse')->latest()->get();
+        $user = auth()->user();
+        $inventory = $user->agribusinessInventory()->with('warehouse')->latest()->get();
 
-        return view('agribusiness.inventory.index', compact('inventory'));
+        $totalQuantity = $inventory->sum('quantity');
+        $totalValue = $inventory->sum(fn ($i) => $i->quantity * ($i->unit_cost ?? 0));
+        $lowStockCount = $inventory->filter(fn ($i) => $i->quantity < ($i->reorder_level ?? 10))->count();
+
+        $kpis = [
+            [
+                'label' => 'Inventory Items',
+                'value' => $inventory->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Quantity',
+                'value' => number_format($totalQuantity, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Total Value',
+                'value' => number_format($totalValue, 0),
+                'format' => 'currency',
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Low Stock',
+                'value' => $lowStockCount,
+                'color' => $lowStockCount > 0 ? 'border-red-500' : 'border-gray-400',
+            ],
+        ];
+
+        return view('agribusiness.inventory.index', compact('inventory', 'kpis'));
     }
 
     public function create(): View

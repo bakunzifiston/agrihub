@@ -8,6 +8,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-module-kpis :kpis="$kpis ?? []" />
+
             @if (session('success'))
                 <div class="mb-4 p-4 bg-primary-100 text-primary rounded-lg">{{ session('success') }}</div>
             @endif
@@ -35,7 +37,7 @@
                             @foreach ($crops as $crop)
                                 <tr>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $crop->crop_name }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->crop_type ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->crop_type ? $crop->crop_type_label : '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->plots->isNotEmpty() ? $crop->plots->pluck('name')->implode(', ') : '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $crop->season ?? '-' }}</td>
                                     <td class="px-4 py-3">

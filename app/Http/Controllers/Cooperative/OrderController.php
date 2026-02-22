@@ -14,8 +14,38 @@ class OrderController extends Controller
 {
     public function index(): View
     {
-        $orders = auth()->user()->cooperativeOrders()->with(['inventory'])->latest('order_date')->latest()->get();
-        return view('cooperative.orders.index', compact('orders'));
+        $user = auth()->user();
+        $orders = $user->cooperativeOrders()->with(['inventory'])->latest('order_date')->latest()->get();
+
+        $totalValue = $orders->sum('total_price');
+        $pendingOrders = $orders->where('order_status', 'pending')->count();
+        $completedOrders = $orders->whereIn('order_status', ['completed', 'delivered'])->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Orders',
+                'value' => $orders->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Value',
+                'value' => number_format($totalValue, 0),
+                'format' => 'currency',
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Pending',
+                'value' => $pendingOrders,
+                'color' => 'border-yellow-500',
+            ],
+            [
+                'label' => 'Completed',
+                'value' => $completedOrders,
+                'color' => 'border-purple-500',
+            ],
+        ];
+
+        return view('cooperative.orders.index', compact('orders', 'kpis'));
     }
 
     public function create(): View

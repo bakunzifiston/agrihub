@@ -12,9 +12,36 @@ class WarehouseController extends Controller
 {
     public function index(): View
     {
-        $warehouses = auth()->user()->cooperativeWarehouses()->withCount('inventory')->with('managerMember')->latest()->get();
+        $user = auth()->user();
+        $warehouses = $user->cooperativeWarehouses()->withCount('inventory')->with('managerMember')->latest()->get();
 
-        return view('cooperative.warehouses.index', compact('warehouses'));
+        $totalCapacity = $warehouses->sum('storage_capacity');
+        $totalItems = $warehouses->sum('inventory_count');
+
+        $kpis = [
+            [
+                'label' => 'Warehouses',
+                'value' => $warehouses->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Capacity',
+                'value' => number_format($totalCapacity, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Inventory Items',
+                'value' => $totalItems,
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Active',
+                'value' => $warehouses->where('status', 'active')->count(),
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('cooperative.warehouses.index', compact('warehouses', 'kpis'));
     }
 
     public function create(): View

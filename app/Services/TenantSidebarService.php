@@ -16,6 +16,13 @@ class TenantSidebarService
                 'farmer.farm-profile.index' => 'Farm Profiles',
             ],
         ],
+        'employees' => [
+            'label' => 'Employees',
+            'tables' => [
+                'farmer.employees.index' => 'Employees',
+                'farmer.trainings.index' => 'Training Records',
+            ],
+        ],
         'crop_livestock_tracking' => [
             'label' => 'Crop & Livestock',
             'tables' => [
@@ -50,12 +57,6 @@ class TenantSidebarService
             'tables' => [
                 'farmer.pre-order-listings.index' => 'Pre-order Listings',
                 'farmer.pre-orders.index' => 'Pre-orders',
-            ],
-        ],
-        'employees' => [
-            'label' => 'Employees',
-            'tables' => [
-                'farmer.employees.index' => 'Employees',
             ],
         ],
         'reports' => [

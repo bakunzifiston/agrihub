@@ -86,11 +86,12 @@ add_action('admin_enqueue_scripts', function ($hook) {
                             box.html('<p><em>No active listings in AgriHub. Add listings in AgriHub first.</em></p>');
                         } else {
                             var html = '<table class=\"widefat striped\"><thead><tr><th style=\"width:40px;\">Approve</th><th>Product</th><th>Qty / Unit</th><th>Price</th><th>Harvest</th><th>Farmer</th></tr></thead><tbody>';
-                            function esc(s) { return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-                            list.forEach(function(item) {
+                            function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;'); }
+                            for (var i = 0; i < list.length; i++) {
+                                var item = list[i];
                                 var farmer = item.farmer || {};
-                                html += '<tr><td><input type=\"checkbox\" class=\"agrihub-approve\" value=\"' + esc(item.id) + '\" checked /></td><td>' + esc(item.title) + '</td><td>' + esc(item.available_to_sell) + ' ' + esc(item.unit) + '</td><td>' + esc(item.price_per_unit) + '</td><td>' + esc(item.expected_harvest_date || '—') + '</td><td>' + esc(farmer.name) + '</td></tr>';
-                            });
+                                html += '<tr><td><input type=\"checkbox\" class=\"agrihub-approve\" value=\"' + esc(item.id) + '\" checked /></td><td>' + esc(item.title) + '</td><td>' + esc(item.available_to_sell) + ' ' + esc(item.unit) + '</td><td>' + esc(item.price_per_unit) + '</td><td>' + esc(item.expected_harvest_date || '-') + '</td><td>' + esc(farmer.name) + '</td></tr>';
+                            }
                             html += '</tbody></table><p class=\"description\">Check to approve (sync), uncheck to reject. <strong>' + list.length + '</strong> listing(s) available.</p>';
                             html += '<p><button type=\"button\" id=\"agrihub-sync-selected\" class=\"button button-primary\">Sync selected only</button> <button type=\"button\" id=\"agrihub-sync-all\" class=\"button\">Sync all</button></p>';
                             box.html(html);
@@ -242,14 +243,19 @@ add_action('wp_ajax_agrihub_sync_listings', function () {
         wp_send_json_error('Invalid API response format.');
     }
 
-    $listing_ids = isset($_POST['listing_ids']) && is_array($_POST['listing_ids']) ? array_map('intval', $_POST['listing_ids']) : null;
-    if ($listing_ids !== null && !empty($listing_ids)) {
-        $listings = array_filter($listings, function ($l) use ($listing_ids) {
-            return in_array((int) ($l['id'] ?? 0), $listing_ids, true);
-        });
+    $listing_ids = null;
+    if ( ! empty( $_POST['listing_ids'] ) && is_array( $_POST['listing_ids'] ) ) {
+        $listing_ids = array_map( 'intval', array_values( $_POST['listing_ids'] ) );
+    }
+    if ( $listing_ids !== null && ! empty( $listing_ids ) ) {
+        $listings = array_filter( $listings, function ( $l ) use ( $listing_ids ) {
+            $id = (int) ( isset( $l['id'] ) ? $l['id'] : 0 );
+            return in_array( $id, $listing_ids );
+        } );
+        $listings = array_values( $listings );
     }
 
-    $count = agrihub_sync_create_products(array_values($listings));
+    $count = agrihub_sync_create_products( $listings );
     wp_send_json_success(['count' => $count]);
 });
 
@@ -285,10 +291,14 @@ function agrihub_sync_create_products(array $listings): int {
             'post_status' => 'any',
         ]);
 
-        if (!empty($existing)) {
-            $product = wc_get_product($existing[0]->ID);
+        if ( ! empty( $existing ) ) {
+            $product = wc_get_product( $existing[0]->ID );
         } else {
             $product = new WC_Product_Simple();
+        }
+
+        if ( ! $product || ! is_object( $product ) ) {
+            continue;
         }
 
         $product->set_name($title);

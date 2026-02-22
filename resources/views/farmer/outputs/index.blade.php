@@ -6,6 +6,8 @@
         </div>
     </x-slot>
 
+    <x-module-kpis :kpis="$kpis ?? []" />
+
     @if (session('success'))
         <div class="mb-4 p-4 bg-primary-100 text-primary rounded-lg">{{ session('success') }}</div>
     @endif
