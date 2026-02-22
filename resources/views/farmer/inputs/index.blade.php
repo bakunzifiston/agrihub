@@ -8,6 +8,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-module-kpis :kpis="$kpis ?? []" />
+
             @if (session('success'))
                 <div class="mb-4 p-4 bg-primary-100 text-primary rounded-lg">{{ session('success') }}</div>
             @endif
@@ -37,7 +39,7 @@
                             @foreach ($inputs as $input)
                                 <tr>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $input->input_name }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">{{ ucfirst($input->input_category) }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">{{ $input->input_category_label }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $input->quantity }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $input->unit ?? '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $input->purchase_date?->format('Y-m-d') ?? '-' }}</td>

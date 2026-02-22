@@ -8,6 +8,7 @@ use App\Http\Controllers\CooperativeDashboardController;
 use App\Http\Controllers\FarmerDashboardController;
 use App\Http\Controllers\Farmer\ClientController as FarmerClientController;
 use App\Http\Controllers\Farmer\EmployeeController as FarmerEmployeeController;
+use App\Http\Controllers\Farmer\EmployeeTrainingController;
 use App\Http\Controllers\Farmer\PreOrderListingController as FarmerPreOrderListingController;
 use App\Http\Controllers\Farmer\PreOrderController as FarmerPreOrderController;
 use App\Http\Controllers\Farmer\CropController;
@@ -89,6 +90,7 @@ Route::middleware(['auth', 'verified', 'tenant.approved', 'tenant.type:farmer'])
     Route::resource('outputs', FarmOutputController::class)->except(['show'])->parameters(['output' => 'farmOutput']);
     Route::resource('clients', FarmerClientController::class)->except(['show'])->parameters(['clients' => 'client']);
     Route::resource('employees', FarmerEmployeeController::class)->except(['show'])->parameters(['employees' => 'employee']);
+    Route::resource('trainings', EmployeeTrainingController::class)->except(['show'])->parameters(['trainings' => 'training']);
     Route::resource('sales', FarmSaleController::class)->except(['show'])->parameters(['sale' => 'farmSale']);
     Route::resource('pre-order-listings', FarmerPreOrderListingController::class)->except(['show'])->parameters(['pre-order-listings' => 'preOrderListing']);
     Route::get('pre-orders', [FarmerPreOrderController::class, 'index'])->name('pre-orders.index');

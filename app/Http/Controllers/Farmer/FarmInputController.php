@@ -12,21 +12,53 @@ class FarmInputController extends Controller
 {
     public function index(): View
     {
-        $inputs = auth()->user()->farmInputs()->latest()->get();
+        $user = auth()->user();
+        $inputs = $user->farmInputs()->latest()->get();
 
-        return view('farmer.inputs.index', compact('inputs'));
+        $totalCost = $inputs->sum('total_cost');
+        $seedCount = $inputs->where('input_category', 'seed')->count();
+        $fertilizerCount = $inputs->where('input_category', 'fertilizer')->count();
+        $feedCount = $inputs->where('input_category', 'feed')->count();
+
+        $kpis = [
+            [
+                'label' => 'Total Inputs',
+                'value' => $inputs->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Cost',
+                'value' => number_format($totalCost, 0),
+                'format' => 'currency',
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Seeds',
+                'value' => $seedCount,
+                'color' => 'border-yellow-500',
+            ],
+            [
+                'label' => 'Fertilizers',
+                'value' => $fertilizerCount,
+                'color' => 'border-purple-500',
+            ],
+        ];
+
+        return view('farmer.inputs.index', compact('inputs', 'kpis'));
     }
 
     public function create(): View
     {
-        return view('farmer.inputs.create');
+        $farmProfiles = auth()->user()->farmProfiles()->orderBy('farm_name')->get();
+
+        return view('farmer.inputs.create', compact('farmProfiles'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'input_name' => ['required', 'string', 'max:255'],
-            'input_category' => ['required', 'string', 'in:seed,fertilizer,feed,medicine'],
+            'input_category' => ['required', 'string', 'in:' . implode(',', array_keys(config('agricultural-inputs')))],
             'quantity' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
             'purchase_date' => ['nullable', 'date'],
@@ -48,7 +80,9 @@ class FarmInputController extends Controller
             abort(403);
         }
 
-        return view('farmer.inputs.edit', compact('farmInput'));
+        $farmProfiles = auth()->user()->farmProfiles()->orderBy('farm_name')->get();
+
+        return view('farmer.inputs.edit', compact('farmInput', 'farmProfiles'));
     }
 
     public function update(Request $request, FarmInput $farmInput): RedirectResponse
@@ -59,7 +93,7 @@ class FarmInputController extends Controller
 
         $validated = $request->validate([
             'input_name' => ['required', 'string', 'max:255'],
-            'input_category' => ['required', 'string', 'in:seed,fertilizer,feed,medicine'],
+            'input_category' => ['required', 'string', 'in:' . implode(',', array_keys(config('agricultural-inputs')))],
             'quantity' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:50'],
             'purchase_date' => ['nullable', 'date'],

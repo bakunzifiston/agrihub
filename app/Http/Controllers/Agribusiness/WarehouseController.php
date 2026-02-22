@@ -12,9 +12,37 @@ class WarehouseController extends Controller
 {
     public function index(): View
     {
-        $warehouses = auth()->user()->agribusinessWarehouses()->withCount('inventory')->latest()->get();
+        $user = auth()->user();
+        $warehouses = $user->agribusinessWarehouses()->withCount('inventory')->latest()->get();
 
-        return view('agribusiness.warehouses.index', compact('warehouses'));
+        $totalCapacity = $warehouses->sum('capacity');
+        $totalInventoryItems = $warehouses->sum('inventory_count');
+        $activeWarehouses = $warehouses->where('status', 'active')->count();
+
+        $kpis = [
+            [
+                'label' => 'Warehouses',
+                'value' => $warehouses->count(),
+                'color' => 'border-green-500',
+            ],
+            [
+                'label' => 'Total Capacity',
+                'value' => number_format($totalCapacity, 0),
+                'color' => 'border-blue-500',
+            ],
+            [
+                'label' => 'Inventory Items',
+                'value' => $totalInventoryItems,
+                'color' => 'border-purple-500',
+            ],
+            [
+                'label' => 'Active',
+                'value' => $activeWarehouses,
+                'color' => 'border-yellow-500',
+            ],
+        ];
+
+        return view('agribusiness.warehouses.index', compact('warehouses', 'kpis'));
     }
 
     public function create(): View

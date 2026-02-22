@@ -11,7 +11,7 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <form method="POST" action="{{ route('farmer.farm-profile.update', $farmProfile) }}">
+                <form method="POST" action="{{ route('farmer.farm-profile.update', $farmProfile) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
                     @include('farmer.farm-profile._form', ['profile' => $farmProfile])

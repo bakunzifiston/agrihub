@@ -267,4 +267,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Distribution::class, 'agribusiness_id');
     }
+
+    public function employeeTrainings(): HasMany
+    {
+        return $this->hasMany(EmployeeTraining::class, 'farmer_id');
+    }
 }

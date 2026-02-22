@@ -43,4 +43,19 @@ return [
         'consumer_secret' => env('WOOCOMMERCE_CONSUMER_SECRET'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | TraceNova (app usage tracking)
+    |--------------------------------------------------------------------------
+    | Set TRACENOVA_ENABLED=true and add the script URL or app ID from your
+    | TraceNova app. Paste the full embed code in the partial if needed.
+    */
+    'tracenova' => [
+        'enabled'   => env('TRACENOVA_ENABLED', false),
+        'base_url'  => rtrim(env('TRACENOVA_BASE_URL', 'https://tracenova.sandbox.rw'), '/'),
+        'app_id'    => env('TRACENOVA_APP_ID'),
+        'api_key'   => env('TRACENOVA_API_KEY'), // optional: for Authorization header on session API
+        'script_url' => env('TRACENOVA_SCRIPT_URL'), // optional: full URL to TraceNova tracker script
+    ],
+
 ];

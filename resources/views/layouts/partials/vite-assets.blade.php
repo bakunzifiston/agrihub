@@ -7,6 +7,7 @@
     {{-- Fallback when Vite build is missing (cPanel): Tailwind CDN + inline theme so it always works --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" />
     <style>
+    [x-cloak]{display:none!important;}
     :root{--primary:#1D293D;--primary-50:#e8eaee;--primary-100:#d1d5dd;--primary-700:#151d2e;--brand:#0F172B;}
     .bg-primary,.bg-primary-600{background-color:var(--primary)!important;}.bg-primary-50,.bg-primary-100{background-color:var(--primary-50)!important;}
     .bg-primary-700{background-color:var(--primary-700)!important;}.text-primary,.text-primary-700{color:var(--primary)!important;}

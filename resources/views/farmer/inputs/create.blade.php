@@ -9,7 +9,7 @@
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 max-w-2xl">
         <form method="POST" action="{{ route('farmer.inputs.store') }}">
             @csrf
-            @include('farmer.inputs._form', ['input' => null])
+            @include('farmer.inputs._form', ['input' => null, 'farmProfiles' => $farmProfiles])
             <div class="mt-6 flex gap-4">
                 <x-primary-button>Add Input</x-primary-button>
                 <a href="{{ route('farmer.inputs.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancel</a>
